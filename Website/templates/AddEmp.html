@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Addemp{% endblock %}
+{% block content %}
+<form method="POST">
+    <div class="form-group">
+
+        <label for="firstname">First Name</label>
+        <input type=text class="form-control"
+        id="firstname"
+        name="firstname"
+        placeholder="First name"
+        />
+    </div>
+    <div class="form-group">
+
+        <label for="lastname">Last Name</label>
+        <input type=text class="form-control"
+        id="lastname"
+        name="lastname"
+        placeholder="Last name"
+        />
+    </div>
+    <div class="form-group">
+
+        <label for="Pin1">Pin</label>
+        <input type=password class="form-control"
+        id="Pin1"
+        name="Pin1"
+        placeholder="Insert a pin"
+        />
+    </div>
+    <div class="form-group">
+
+        <label for="Pin2">Pin (Confirm)</label>
+        <input type=password class="form-control"
+        id="Pin2"
+        name="Pin2"
+        placeholder="Reinsert pin"
+        />
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">Register Employee</button>
+</form>
+{% endblock %}    

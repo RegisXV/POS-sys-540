@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Login..{% endblock %} 
+{% block content %}
+<h1>Insert Employee Pin </h1>
+<form method="POST">
+    <div class="form-group">
+        <label for="pin">Pin</label>
+        <input type="password" class="form-control"
+        id="pin"
+        name="pin"
+        placeholder="Pin"
+        />
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">Login</button>
+</form>
+{% endblock %}    
+
