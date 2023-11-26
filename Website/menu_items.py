@@ -1,16 +1,8 @@
 # from flask import Flask, render_template, request, redirect, url_for, session, Blueprint, flash, current_app
 from bs4 import BeautifulSoup
-import mysql.connector
+from Website.db_connector import menu_db as db_connect
+from Website.db_connector import mycursor as my_sql_cursor
 
-
-menu_db = mysql.connector.connect(
-  host="localhost",
-  user="root",
-  passwd="password",
-  database="POS"
-)
-
-mycursor = menu_db.cursor()
 
 #iterate through mysql table cells instead of lists
 entree_list=["Jumbo Dog","Bacon Burger","Original Burger","Fried Chicken","pasta"]
@@ -18,25 +10,23 @@ sides_list=["Curly Fries","Onion Rings","Tater Tots"]
 starters_list=["Fried Calamari","Fried Mozzerella","Garlic Bread"]
 drinks_list=["Dark Beer","Light Beer","Hard Apple Cider","Lemonade"]
 
+
 def sql_menu_insert(Category,items_list):
   for element in items_list:
-    mycursor.execute(f"INSERT INTO Menu_Items ({Category}) VALUES ('{element}')")
+    my_sql_cursor.execute(f"INSERT INTO Menu_Items ({Category}) SELECT  VALUES ('{element}')")
     
 
 def sql_menu_update(col_name,items_list):
   i = 1
   for element in items_list:
-    mycursor.execute(f"UPDATE Menu_Items SET {col_name} = '{element}' WHERE ID = {i}")
-    menu_db.commit()
+    my_sql_cursor.execute(f"UPDATE Menu_Items SET {col_name} = '{element}' WHERE ID = {i}")
+    db_connect.commit()
     i += 1
- 
  
 sql_menu_insert("Entrees",entree_list)
 sql_menu_update("Sides", sides_list)
 sql_menu_update("Appetizers",starters_list)
 sql_menu_update("Drinks", drinks_list)
-
-
 
 def bar_menu_update():
   def add_to_menu(item_list,item_id):
@@ -73,12 +63,11 @@ def bar_menu_update():
       del tag['class_']
  
 
-  with open(menu_fp, "w", encoding="utf8") as updated_menu:
+  with open(menu_fp2, "w", encoding="utf8") as updated_menu:
  
     updated_menu.write(str(soup.prettify()))
 
 
-bar_menu_update()
 
 
 

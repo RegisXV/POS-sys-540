@@ -1,31 +1,61 @@
 from flask import Flask, render_template, request, redirect, url_for, session, Blueprint, flash, current_app
-from flask_mysqldb import MySQL
-import MySQLdb.cursors
+from Website.menu_items import bar_menu_update 
 import re
+import mysql.connector
+
+
+menu_db = mysql.connector.connect(
+host="localhost",
+user="root",
+passwd="password",
+database="POS"
+)
+cur = menu_db.cursor(buffered=True)
+
 
 auth = Blueprint('auth', __name__)
 
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
+  
+    enteredPin = request.form.get('pin')
     if request.method == 'POST':
-        pin = request.form.get('pin')
-        cur = current_app.mysql.connection.cursor()
-        cur.execute("SELECT * FROM users WHERE pin = %s", (pin,))
-        user = cur.fetchone()
-        cur.close()
+        
+        cur.execute(f"SELECT pin FROM manager WHERE '{enteredPin}' IN (pin)")
+        menu_db.commit()
+        if len(enteredPin) == 0: 
+            flash("PIN cannot be blank.")
 
-        if user:
-            # User found, do something
-            flash('Login successful!', category='success')
-        else:
-            flash('Invalid pin, try again.', category='error')
+        for x in cur:
+            if enteredPin not in x:
+                flash('Invalid pin, try again.', category='error')
+            else:
+                flash('Login successful!', category='success')
+                return render_template("Manager.html")
 
+            cur.close()  
+          
+
+        cur.execute(f"SELECT pin FROM Employees WHERE '{enteredPin}' IN (pin)")
+        menu_db.commit()
+        if len(enteredPin) == 0: 
+            flash("PIN cannot be blank.")
+
+        for x in cur:
+            if enteredPin not in x:
+                flash('Invalid pin, try again.', category='error')
+            else:
+                bar_menu_update()
+                return render_template("menu_add.html")
+
+            cur.close()  
     return render_template("login.html", boolean=True)
 
-@auth.route('/manager', methods=['GET', 'POST'])
-def manager():
-    return render_template("Manager.html")
+
+# @auth.route('/manager', methods=['GET', 'POST'])
+# def manager():
+#     return render_template("Manager.html")
 
 @auth.route('/Addemp', methods=['GET', 'POST'])
 def addemp():
@@ -45,14 +75,14 @@ def addemp():
             flash('Pins do not match', category='error')
         else:
             try:
-                mysql = current_app.mysql  # Access mysql object from current_app
-                cur = mysql.connection.cursor()
+                # mysql = current_app.mysql  # Access mysql object from current_app
+                # cur = mysql.connection.cursor()
 
                 # Insert employee data into the 'employees' table (replace with your actual table name)
                 cur.execute("INSERT INTO employees (firstname, lastname, pin) VALUES (%s, %s, %s)",
                             (fname, lname, pin1))
 
-                mysql.connection.commit()
+                menu_db.commit()
                 cur.close()
 
                 flash('Employee Added!', category='success')
