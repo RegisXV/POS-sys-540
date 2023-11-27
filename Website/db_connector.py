@@ -4,7 +4,7 @@ import mysql.connector
 menu_db = mysql.connector.connect(
   host="localhost",
   user="root",
-  passwd="password",
+  passwd="root",
   database="POS"
 )
 

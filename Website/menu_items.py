@@ -13,7 +13,7 @@ drinks_list=["Dark Beer","Light Beer","Hard Apple Cider","Lemonade"]
 
 def sql_menu_insert(Category,items_list):
   for element in items_list:
-    my_sql_cursor.execute(f"INSERT INTO Menu_Items ({Category}) SELECT  VALUES ('{element}')")
+    my_sql_cursor.execute(f"INSERT INTO Menu_Items ({Category}) VALUES ('{element}')")
     
 
 def sql_menu_update(col_name,items_list):
