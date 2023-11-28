@@ -71,6 +71,15 @@ OrderID int,
 EmployeeID int,
 totalPrice int );
 
+CREATE TABLE Menu_Items (
+ID int auto_increment primary key,
+Entrees varchar(100),
+Sides varchar (100),
+Appetizers varchar(100),
+Drinks varchar(100),
+menuPrice decimal(3,2)
+);
+
 
 
 delimiter//

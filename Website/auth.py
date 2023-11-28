@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, Blueprint, flash, current_app
-from Website.menu_items import bar_menu_update 
+from Website.menu_items import sql_menu_update 
 import re
 import mysql.connector
 
@@ -46,7 +46,7 @@ def login():
             if enteredPin not in x:
                 flash('Invalid pin, try again.', category='error')
             else:
-                bar_menu_update()
+                sql_menu_update()
                 return render_template("menu_add.html")
 
             cur.close()  
