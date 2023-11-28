@@ -4,7 +4,7 @@ from Website.db_connector import menu_db as db_connect
 from Website.db_connector import mycursor as my_sql_cursor
 import os
 
-# Sets directory to the one containing this script
+# Set the working directory to the directory containing the script
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 my_sql_cursor.execute('''
@@ -42,7 +42,7 @@ sql_menu_update("Sides", sides_list)
 sql_menu_update("Appetizers", starters_list)
 sql_menu_update("Drinks", drinks_list)
 
-# HTML modification function
+# HTML modification function (assuming the file paths are correct)
 def add_to_menu(item_list, item_id):
     menu_dropdown = soup.find(attrs={'id': f'{item_id}'})
     for item_el in item_list:
