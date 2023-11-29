@@ -46,7 +46,7 @@ def login():
             if enteredPin not in x:
                 flash('Invalid pin, try again.', category='error')
             else:
-                sql_menu_update()
+                #sql_menu_update()
                 return render_template("menu_add.html")
 
             cur.close()  
@@ -91,4 +91,25 @@ def addemp():
 
     return render_template("AddEmp.html")
 
+def remove_employee(employee_id_to_remove):
+    try:
+        # Assuming 'employees' is your table name and 'id' is the primary key
+        cur.execute("DELETE FROM employees WHERE employeeID = %s", (employee_id_to_remove,))
+        menu_db.commit()
+
+        flash('Employee Removed!', category='success')
+    except Exception as e:
+        flash(f'Error removing employee: {e}', category='error')
+
+@auth.route('/remove_employee', methods=['GET', 'POST'])
+def remove_employee_route():
+    if request.method == 'POST':
+        employee_id_to_remove = int(request.form.get('remove_employee_id'))
+        remove_employee(employee_id_to_remove)
+
+    # Fetch the updated employee list after removal
+    cur.execute("SELECT * FROM employees")
+    employee_list = cur.fetchall()
+
+    return render_template('RemEmp.html', employee_list=employee_list)
 
