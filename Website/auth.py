@@ -3,7 +3,7 @@ from Website.menu_items import sql_menu_update
 import re
 import mysql.connector
 
-
+#Connecting Database
 menu_db = mysql.connector.connect(
 host="localhost",
 user="root",
@@ -62,7 +62,7 @@ def login():
 # def manager():
 #     return render_template("Manager.html")
 
-@auth.route('/Addemp', methods=['GET', 'POST'])
+@auth.route('/Addemp', methods=['GET', 'POST']) #Add Employee 
 def addemp():
     if request.method == 'POST':
         try:
@@ -80,8 +80,8 @@ def addemp():
             elif pin1 != pin2:
                 flash('Pins do not match', category='error')
             else:
-                # Insert employee data into the 'employees' table
-                cur.execute("INSERT INTO employees (firstname, lastname, pin) VALUES (%s, %s, %s)",
+                
+                cur.execute("INSERT INTO Employees (firstname, lastname, pin) VALUES (%s, %s, %s)",
                             (fname, lname, pin1))
 
                 menu_db.commit()
@@ -96,8 +96,8 @@ def addemp():
 
 def remove_employee(employee_id_to_remove):
     try:
-        # Assuming 'employees' is your table name and 'id' is the primary key
-        cur.execute("DELETE FROM employees WHERE employeeID = %s", (employee_id_to_remove,))
+        
+        cur.execute("DELETE FROM Employees WHERE employeeID = %s", (employee_id_to_remove,))
         menu_db.commit()
 
         flash('Employee Removed!', category='success')
@@ -107,22 +107,11 @@ def remove_employee(employee_id_to_remove):
 @auth.route('/remove_employee', methods=['GET', 'POST'])
 def remove_employee_route():
     if request.method == 'POST':
-        try:
-            employee_id_to_remove = int(request.form.get('remove_employee_id'))
-            remove_employee(employee_id_to_remove)
-
-        except Exception as e:
-            flash(f'Error during employee removal: {e}', category='error')
+        employee_id_to_remove = int(request.form.get('remove_employee_id'))
+        remove_employee(employee_id_to_remove)
 
     # Fetch the updated employee list after removal
-    try:
-        cur.execute("SELECT * FROM employees")
-        employee_list = cur.fetchall()
-        return render_template('RemEmp.html', employee_list=employee_list)
+    cur.execute("SELECT * FROM employees")
+    employee_list = cur.fetchall()
 
-    except Exception as e:
-        flash(f'Error fetching employee list: {e}', category='error')
-
-    finally:
-        cur.close()  # Close the cursor
-        menu_db.close()
+    return render_template('RemEmp.html', employee_list=employee_list)
