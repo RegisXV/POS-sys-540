@@ -18,38 +18,43 @@ auth = Blueprint('auth', __name__)
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
-  
     enteredPin = request.form.get('pin')
     if request.method == 'POST':
-        
-        cur.execute(f"SELECT pin FROM manager WHERE '{enteredPin}' IN (pin)")
-        menu_db.commit()
-        if len(enteredPin) == 0: 
-            flash("PIN cannot be blank.")
+        try:
+            # Check manager PIN
+            cur.execute(f"SELECT pin FROM manager WHERE '{enteredPin}' IN (pin)")
+            menu_db.commit()
+            if len(enteredPin) == 0: 
+                flash("PIN cannot be blank.")
 
-        for x in cur:
-            if enteredPin not in x:
-                flash('Invalid pin, try again.', category='error')
-            else:
-                flash('Login successful!', category='success')
-                return render_template("Manager.html")
+            for x in cur:
+                if enteredPin not in x:
+                    flash('Invalid pin, try again.', category='error')
+                else:
+                    flash('Login successful!', category='success')
+                    return render_template("Manager.html")
 
-            cur.close()  
-          
+        except Exception as e:
+            flash(f'Error checking manager PIN: {e}', category='error')
 
-        cur.execute(f"SELECT pin FROM Employees WHERE '{enteredPin}' IN (pin)")
-        menu_db.commit()
-        if len(enteredPin) == 0: 
-            flash("PIN cannot be blank.")
+        try:
+            # Check employee PIN
+            cur.execute(f"SELECT pin FROM Employees WHERE '{enteredPin}' IN (pin)")
+            menu_db.commit()
+            if len(enteredPin) == 0: 
+                flash("PIN cannot be blank.")
 
-        for x in cur:
-            if enteredPin not in x:
-                flash('Invalid pin, try again.', category='error')
-            else:
-                #sql_menu_update()
-                return render_template("menu_add.html")
+            for x in cur:
+                if enteredPin not in x:
+                    flash('Invalid pin, try again.', category='error')
+                else:
+                    return render_template("menu_add.html")
 
-            cur.close()  
+        except Exception as e:
+            flash(f'Error checking employee PIN: {e}', category='error')
+        cur.close
+        menu_db.close
+
     return render_template("login.html", boolean=True)
 
 
@@ -60,35 +65,33 @@ def login():
 @auth.route('/Addemp', methods=['GET', 'POST'])
 def addemp():
     if request.method == 'POST':
-        fname = request.form.get('firstname')
-        lname = request.form.get('lastname')
-        pin1 = request.form.get('Pin1')
-        pin2 = request.form.get('Pin2')
+        try:
+            fname = request.form.get('firstname')
+            lname = request.form.get('lastname')
+            pin1 = request.form.get('Pin1')
+            pin2 = request.form.get('Pin2')
 
-        if len(fname) == 0:
-            flash('Insert valid first name', category='error')
-        elif len(lname) == 0:
-            flash('Insert valid last name', category='error')
-        elif pin1 == 0:
-            flash('Insert valid pin', category='error')
-        elif pin1 != pin2:
-            flash('Pins do not match', category='error')
-        else:
-            try:
-                # mysql = current_app.mysql  # Access mysql object from current_app
-                # cur = mysql.connection.cursor()
-
-                # Insert employee data into the 'employees' table (replace with your actual table name)
+            if len(fname) == 0:
+                flash('Insert valid first name', category='error')
+            elif len(lname) == 0:
+                flash('Insert valid last name', category='error')
+            elif len(pin1) == 0:
+                flash('Insert valid pin', category='error')
+            elif pin1 != pin2:
+                flash('Pins do not match', category='error')
+            else:
+                # Insert employee data into the 'employees' table
                 cur.execute("INSERT INTO employees (firstname, lastname, pin) VALUES (%s, %s, %s)",
                             (fname, lname, pin1))
 
                 menu_db.commit()
-                cur.close()
-
                 flash('Employee Added!', category='success')
-            except Exception as e:
-                flash(f'Error adding employee: {e}', category='error')
 
+        except Exception as e:
+            flash(f'Error adding employee: {e}', category='error')
+
+        cur.close
+        menu_db.close
     return render_template("AddEmp.html")
 
 def remove_employee(employee_id_to_remove):
@@ -104,12 +107,22 @@ def remove_employee(employee_id_to_remove):
 @auth.route('/remove_employee', methods=['GET', 'POST'])
 def remove_employee_route():
     if request.method == 'POST':
-        employee_id_to_remove = int(request.form.get('remove_employee_id'))
-        remove_employee(employee_id_to_remove)
+        try:
+            employee_id_to_remove = int(request.form.get('remove_employee_id'))
+            remove_employee(employee_id_to_remove)
+
+        except Exception as e:
+            flash(f'Error during employee removal: {e}', category='error')
 
     # Fetch the updated employee list after removal
-    cur.execute("SELECT * FROM employees")
-    employee_list = cur.fetchall()
+    try:
+        cur.execute("SELECT * FROM employees")
+        employee_list = cur.fetchall()
+        return render_template('RemEmp.html', employee_list=employee_list)
 
-    return render_template('RemEmp.html', employee_list=employee_list)
+    except Exception as e:
+        flash(f'Error fetching employee list: {e}', category='error')
 
+    finally:
+        cur.close()  # Close the cursor
+        menu_db.close()
