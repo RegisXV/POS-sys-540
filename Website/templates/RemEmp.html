@@ -8,7 +8,7 @@
     <ul>
         {% for employee in employee_list %}
             <li>
-                {{ employee[1] }} {{ employee[2] }} (PIN: {{ employee[3] }})
+                {{ employee[0] }} {{ employee[1] }} (PIN: {{ employee[2] }})
                 <button type="submit" name="remove_employee_id" value="{{ employee[0] }}" class="btn btn-danger">Remove</button>
             </li>
         {% endfor %}

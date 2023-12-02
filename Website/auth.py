@@ -139,7 +139,7 @@ def remove_employee_route():
         remove_employee(employee_id_to_remove)
 
     # Fetch the updated employee list after removal
-    cur.execute("SELECT * FROM employees")
+    cur.execute("SELECT firstname,lastname,pin FROM employees")
     employee_list = cur.fetchall()
 
     return render_template('RemEmp.html', employee_list=employee_list)
