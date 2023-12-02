@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order List</title>
+</head>
+<body>
+    <h1>Order List</h1>
+
+    <!-- Display list of orders -->
+    <ul>
+        {% for order in orders %}
+            <li>Order {{ loop.index }}: {{ order[1] }}</li>
+        {% endfor %}
+    </ul>
+
+    <!-- Form to create a new order -->
+    <form method="POST" action="{{ url_for('auth.place_order') }}">
+        <label for="ordername">Order Name:</label>
+        <input type="text" id="ordername" name="ordername" required>
+        <button type="submit">Create Order</button>
+    </form>
+
+    <button onclick=location.href="/logout">Logout</button>
+</body>
+</html>

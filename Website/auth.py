@@ -15,75 +15,63 @@ cur = menu_db.cursor(buffered=True)
 
 auth = Blueprint('auth', __name__)
 
+def get_current_employee_id():
+    return session.get('employeeID', None)
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     entered_pin = request.form.get('pin')
-    man=True 
-    emp=True
 
     if request.method == 'POST':
         try:
             # Check manager PIN
-            cur.execute("SELECT pin, is_manager FROM Employees WHERE pin = %s", (entered_pin,))
+            cur.execute("SELECT employeeID, is_manager FROM Employees WHERE pin = %s", (entered_pin,))
             result = cur.fetchone()
 
             if result:
-                pin, is_manager = result
+                employeeID, is_manager = result
+                session['employeeID'] = employeeID  # Store employeeID in the session
+
                 if is_manager:
                     flash('Login successful as Manager!', category='success')
                     return render_template("Manager.html")
                 else:
-                    man=False
-                    
-
-        except Exception as e:
-            flash(f'Error checking manager PIN: {e}', category='error')
-
-        try:
-            # Check employee PIN
-            cur.execute("SELECT pin, is_manager FROM Employees WHERE pin = %s", (entered_pin,))
-            result = cur.fetchone()
-
-            if result:
-                pin, is_manager = result
-                if not is_manager:
                     flash('Login successful as Employee!', category='success')
-                    return render_template("pos.html")
-                else:
-                    emp=False
-                
+                    return render_template("orders.html")
 
         except Exception as e:
-            flash(f'Error checking employee PIN: {e}', category='error')
+            flash(f'Error checking PIN: {e}', category='error')
 
-        finally:
-            cur.close()
-            menu_db.close()
-            
-        if not emp and not man:
-            flash('Invalid pin, please try again.', category='error')
+        flash('Invalid pin, please try again.', category='error')
 
     return render_template("login.html", boolean=True)
 
 @auth.route('/order', methods=['GET', 'POST'])
 def place_order():
+    # Fetch the list of orders for the current employee
+    if request.method == 'GET':
+        employeeID = get_current_employee_id()
+        cur.execute("SELECT listid, ordername FROM orderlist WHERE employeeID = %s", (employeeID))
+        orders = cur.fetchall()
+    
+
     if request.method == 'POST':
         try:
-            order_items = request.form.getlist('order_item')
-
-            for item in order_items:
-                name, category, price = item.split('|')
-                cur.execute("INSERT INTO orders (item_name, category, price) VALUES (%s, %s, %s)",
-                            (name, category, price))
-
+            ordername = request.form.get('ordername')
+            
+            # Assuming your orderlist table has 'ordername' and 'employeeID' columns
+            cur.execute("INSERT INTO orderlist (ordername, employeeID) VALUES (%s, %s)", (ordername, employeeID))
+            
             menu_db.commit()
             flash('Order Placed Successfully!', category='success')
-
+            
+            # Redirect to the same page after placing the order
+            return redirect(url_for('auth.place_order'))
         except Exception as e:
             flash(f'Error placing order: {e}', category='error')
 
-    return render_template('order.html', apps=apps, entrees=entrees, sides=sides, drinks=drinks)
+    return render_template('orders.html', orders=orders)
+
 
 @auth.route('/Addemp', methods=['GET', 'POST']) #Add Employee 
 def addemp():
@@ -150,4 +138,11 @@ def remove_employee_route():
     employee_list = cur.fetchall()
 
     return render_template('RemEmp.html', employee_list=employee_list)
+
+@auth.route('/logout')
+def logout():
+    # Clear the session to log the user out
+    session.clear()
+    flash('Logout successful!', category='success')
+    return redirect(url_for('auth.login'))
 
