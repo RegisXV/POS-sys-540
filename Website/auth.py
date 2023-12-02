@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, Blueprint, flash, current_app
-from Website.menu_items import sql_menu_update 
+#from Website.menu_items import sql_menu_update 
 import re
 import mysql.connector
 
@@ -19,6 +19,8 @@ auth = Blueprint('auth', __name__)
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
     entered_pin = request.form.get('pin')
+    man=True 
+    emp=True
 
     if request.method == 'POST':
         try:
@@ -32,7 +34,8 @@ def login():
                     flash('Login successful as Manager!', category='success')
                     return render_template("Manager.html")
                 else:
-                    flash('Invalid pin for Manager, try again.', category='error')
+                    man=False
+                    
 
         except Exception as e:
             flash(f'Error checking manager PIN: {e}', category='error')
@@ -48,7 +51,8 @@ def login():
                     flash('Login successful as Employee!', category='success')
                     return render_template("pos.html")
                 else:
-                    flash('Invalid pin for Employee, try again.', category='error')
+                    emp=False
+                
 
         except Exception as e:
             flash(f'Error checking employee PIN: {e}', category='error')
@@ -56,6 +60,9 @@ def login():
         finally:
             cur.close()
             menu_db.close()
+            
+        if not emp and not man:
+            flash('Invalid pin, please try again.', category='error')
 
     return render_template("login.html", boolean=True)
 
@@ -143,3 +150,4 @@ def remove_employee_route():
     employee_list = cur.fetchall()
 
     return render_template('RemEmp.html', employee_list=employee_list)
+

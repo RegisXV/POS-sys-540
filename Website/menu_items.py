@@ -54,7 +54,7 @@ def add_to_menu(item_list, item_id):
 menu_fp2 = "templates/menu_add.html"
 
 # Read HTML file
-with open(menu_fp2, "r", encoding="utf8") as menu_page:
+#with open(menu_fp2, "r", encoding="utf8") as menu_page:
     soup = BeautifulSoup(menu_page, "html.parser")
 
 # Add menu items to HTML
