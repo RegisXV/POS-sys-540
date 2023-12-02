@@ -18,49 +18,65 @@ auth = Blueprint('auth', __name__)
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
-    enteredPin = request.form.get('pin')
+    entered_pin = request.form.get('pin')
+
     if request.method == 'POST':
         try:
             # Check manager PIN
-            cur.execute(f"SELECT pin FROM manager WHERE '{enteredPin}' IN (pin)")
-            menu_db.commit()
-            if len(enteredPin) == 0: 
-                flash("PIN cannot be blank.")
+            cur.execute("SELECT pin, is_manager FROM Employees WHERE pin = %s", (entered_pin,))
+            result = cur.fetchone()
 
-            for x in cur:
-                if enteredPin not in x:
-                    flash('Invalid pin, try again.', category='error')
-                else:
-                    flash('Login successful!', category='success')
+            if result:
+                pin, is_manager = result
+                if is_manager:
+                    flash('Login successful as Manager!', category='success')
                     return render_template("Manager.html")
+                else:
+                    flash('Invalid pin for Manager, try again.', category='error')
 
         except Exception as e:
             flash(f'Error checking manager PIN: {e}', category='error')
 
         try:
             # Check employee PIN
-            cur.execute(f"SELECT pin FROM Employees WHERE '{enteredPin}' IN (pin)")
-            menu_db.commit()
-            if len(enteredPin) == 0: 
-                flash("PIN cannot be blank.")
+            cur.execute("SELECT pin, is_manager FROM Employees WHERE pin = %s", (entered_pin,))
+            result = cur.fetchone()
 
-            for x in cur:
-                if enteredPin not in x:
-                    flash('Invalid pin, try again.', category='error')
+            if result:
+                pin, is_manager = result
+                if not is_manager:
+                    flash('Login successful as Employee!', category='success')
+                    return render_template("pos.html")
                 else:
-                    return render_template("menu_add.html")
+                    flash('Invalid pin for Employee, try again.', category='error')
 
         except Exception as e:
             flash(f'Error checking employee PIN: {e}', category='error')
-        cur.close
-        menu_db.close
+
+        finally:
+            cur.close()
+            menu_db.close()
 
     return render_template("login.html", boolean=True)
 
+@auth.route('/order', methods=['GET', 'POST'])
+def place_order():
+    if request.method == 'POST':
+        try:
+            order_items = request.form.getlist('order_item')
 
-# @auth.route('/manager', methods=['GET', 'POST'])
-# def manager():
-#     return render_template("Manager.html")
+            for item in order_items:
+                name, category, price = item.split('|')
+                cur.execute("INSERT INTO orders (item_name, category, price) VALUES (%s, %s, %s)",
+                            (name, category, price))
+
+            menu_db.commit()
+            flash('Order Placed Successfully!', category='success')
+
+        except Exception as e:
+            flash(f'Error placing order: {e}', category='error')
+
+    return render_template('order.html', apps=apps, entrees=entrees, sides=sides, drinks=drinks)
 
 @auth.route('/Addemp', methods=['GET', 'POST']) #Add Employee 
 def addemp():
@@ -96,11 +112,23 @@ def addemp():
 
 def remove_employee(employee_id_to_remove):
     try:
-        
-        cur.execute("DELETE FROM Employees WHERE employeeID = %s", (employee_id_to_remove,))
-        menu_db.commit()
+        # Check if the employee is a manager
+        cur.execute("SELECT is_manager FROM Employees WHERE employeeID = %s", (employee_id_to_remove,))
+        result = cur.fetchone()
 
-        flash('Employee Removed!', category='success')
+        if result:
+            is_manager = result[0]
+
+            if is_manager:
+                flash('Manager cannot be removed.', category='error')
+            else:
+                # Delete the employee if not a manager
+                cur.execute("DELETE FROM Employees WHERE employeeID = %s", (employee_id_to_remove,))
+                menu_db.commit()
+                flash('Employee Removed!', category='success')
+        else:
+            flash('Employee not found.', category='error')
+
     except Exception as e:
         flash(f'Error removing employee: {e}', category='error')
 

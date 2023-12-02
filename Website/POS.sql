@@ -1,49 +1,49 @@
 create DATABASE POS;
 USE POS;
+drop database POS;
 
-CREATE TABLE Menu (
-ItemID int primary key,
-Itemname varchar(100)
-);
+Create Table pos (
+orderid int primary key auto_increment not null,
+employeeID int not null,
+ordername varchar(100),
+itemID int not null,
+cart varchar(100),
+cost double,
+totalcost double);
 
-CREATE TABLE ItemStock (
-ItemID int primary key NOT NULL,
-Itemname varchar(100) NOT NULL,
-totalQuant int NOT NULL,
-ItemCost int NOT NULL);
+Create Table orderlist (
+listid int primary key auto_increment not null,
+orderid int,
+ordername varchar(100) Not NULL,
+employeeID int Not NUll,
+Foreign Key (employeeID) References Employees(employeeID),
+Foreign Key (orderid) References pos (orderid));
 
+Create Table orderhistory(
+historyid int primary key auto_increment Not NUll,
+orderid int not null,
+employeeID int not null,
+ordername varchar(100) Not NUll,
+total double,
+Foreign key (employeeID) References Employees(employeeID),
+Foreign Key (orderid) References pos (orderid));
 
-delimiter //
-CREATE TRIGGER receivedItem BEFORE UPDATE on ItemStock
-FOR EACH ROW
-BEGIN
-SET @AddQuant := old.totalQuant + new.totalQuant;
-SET @MinusQuant := old.totalQuant - new.TotalQuant;
-
-	IF new.totalQuant >= 0 THEN 
-		SET new.totalQuant = @AddQuant;
-	ELSEIF new.totalQuant > 0 THEN
-		SET new.totalQuant = @MinusQuant;
-	ELSE 
-		SET new.totalQuant = @addQuant;
-	END IF;
-END;//
-delimiter ;
-
-
-CREATE TABLE Managers (
-ID int auto_increment,
-firstname VARCHAR (60) NOT NULL,
-lastname VARCHAR (60) NOT NULL,
-PIN VARCHAR (50) NOT NULL
-);
+CREATE TABLE Itemlist  (
+itemID int primary key NOT NULL,
+itemname varchar(100) NOT NULL,
+category varchar(255) not Null,
+cost int NOT NULL);
 
 CREATE TABLE Employees (
 employeeID int primary key auto_increment,
+is_manager boolean not null default 0,
 firstname varchar(60) NOT NULL,
 lastname varchar(60)  NOT NULL,
-PIN VARCHAR (50) NOT NULL
+pin VARCHAR (50) NOT NULL
  );
+ insert into Employees(is_manager,firstname,lastname,PIN)
+ Values (1,'Joe','Bob','0001');
+ select*from Employees;
  
  CREATE TABLE Employee_Salary (
 firstname varchar(60),
@@ -53,74 +53,8 @@ tips int NOT NULL,
 total_pay int
  );
  
- #required salary is $25000
-delimiter //
-CREATE TRIGGER min_server_pay BEFORE UPDATE ON Employee_Salary 
-FOR EACH ROW 
-BEGIN
-	IF new.baseSalary + new.tips < 25000 THEN
-		SET new.baseSalary = 25000 - new.tips; 
-        SET new.total_pay = new.baseSalary + new.tips;
-	END IF;
-END;//
-delimiter ;
-	
-CREATE TABLE Sales_Table (
-ListID int,
-OrderID int,
-EmployeeID int,
-totalPrice int );
-
-CREATE TABLE Menu_Items (
-ID int auto_increment primary key,
-Entrees varchar(100),
-Sides varchar (100),
-Appetizers varchar(100),
-Drinks varchar(100),
-menuPrice decimal(3,2)
-);
 
 
-
-delimiter//
-CREATE TRIGGER item_POS_update AFTER INSERT ON POS
-FOR EACH ROW
-BEGIN 
-END;//
-delimiter// ;
-
-# will update item quantity in inventory after order has been placed.  Maybe create separate tables for food base price and sale price?
-
-
-
-
-
-#### Original Code #######
-
-
--- Create Database POS;
--- use POS;
--- Create table manager(id INT AUTO_INCREMENT,
--- firstname char (255),
--- lastname char(255),
--- pin Varchar(255) Primary Key,
--- Foreign Key (id) References employees(employee_id));
-
--- drop table manager;
--- Insert into manager(firstname,lastname,pin)
--- Values('Joe','Bob','0001');
-
--- Select* from manager;
-
--- CREATE TABLE employees (
-    -- employee_id INT AUTO_INCREMENT PRIMARY KEY,
-    -- firstname VARCHAR(255) NOT NULL,
-    -- lastname VARCHAR(255) NOT NULL,
-    -- pin VARCHAR(255) NOT NULL
--- );
--- Insert into employees(firstname,lastname,pin)
--- Values('Joe','Bob','0001');
--- drop table employees;
 
 
 
