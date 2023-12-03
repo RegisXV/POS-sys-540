@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Addemp{% endblock %}
 {% block content %}
+<button onclick=location.href="/remove_employee">Remove Employee</button>
+<button onclick=location.href="/menu">menu</button>
 <form method="POST">
     <div class="form-group">
-
         <label for="firstname">First Name</label>
         <input type=text class="form-control"
         id="firstname"

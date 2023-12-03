@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Remove Employee{% endblock %}
+{% block content %}
+<button onclick=location.href="/Addemp">Add Employee</button>
+<button onclick=location.href="/menu">menu</button>
+<form method="POST" action="{{ url_for('auth.remove_employee_route') }}">
+    <h2>Employee List</h2>
+    <ul>
+        {% for employee in employee_list %}
+            <li>
+                {{ employee[0] }} {{ employee[1] }} (PIN: {{ employee[2] }})
+                <button type="submit" name="remove_employee_id" value="{{ employee[0] }}" class="btn btn-danger">Remove</button>
+            </li>
+        {% endfor %}
+    </ul>
+</form>
+{% endblock %}    

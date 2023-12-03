@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Place Order{% endblock %}
+{% block content %}
+  <h2>Menu</h2>
+
+  <!-- Apps -->
+  <h3>Apps</h3>
+  <div class="menu-category">
+    <form method="POST" action="{{ url_for('auth.place_order') }}" id="orderForm">
+      {% for item in apps %}
+        <div class="menu-item">
+          {{ item.name }} - ${{ item.price }}
+          <div>
+            <button type="button" class="add-to-cart" data-item="{{ item.name }}|{{ item.category }}|{{ item.price }}">+</button>
+            <span id="quantity_{{ item.name }}">0</span>
+            <input type="hidden" name="quantity_{{ item.name }}" id="input_quantity_{{ item.name }}" value="0">
+            <div id="order_item_{{ item.name }}"></div>
+          </div>
+        </div>
+      {% endfor %}
+      <input type="hidden" name="order_items" id="orderItems">
+      <input type="submit" value="Place Order" class="btn btn-primary">
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const orderItemsInput = document.getElementById('orderItems');
+
+      document.querySelectorAll('.add-to-cart').forEach(function(button) {
+        const itemName = button.getAttribute('data-item').split('|')[0];
+        const quantitySpan = document.getElementById('quantity_' + itemName);
+        const quantityInput = document.getElementById('input_quantity_' + itemName);
+        const orderItemDiv = document.getElementById('order_item_' + itemName);
+
+        button.addEventListener('click', function() {
+          let quantity = parseInt(quantityInput.value);
+          quantity++;
+          quantitySpan.textContent = quantity;
+          quantityInput.value = quantity;
+
+          // Display the item details in the order items list
+          const itemDetails = button.getAttribute('data-item').split('|');
+          const orderItemHtml = `<div>${itemDetails[0]} - $${itemDetails[2]} (Qty: ${quantity})</div>`;
+          orderItemDiv.innerHTML += orderItemHtml;
+
+          // Handle the order items
+          updateOrderItems();
+        });
+      });
+
+      function updateOrderItems() {
+        const orderItems = [];
+        document.querySelectorAll('[id^="input_quantity_"]').forEach(function(input) {
+          const itemName = input.id.split('_')[2];
+          const quantity = parseInt(input.value);
+          if (quantity > 0) {
+            orderItems.push(`${itemName}|${quantity}`);
+          }
+        });
+        orderItemsInput.value = orderItems.join(',');
+      }
+    });
+  </script>
+{% endblock %}
+
