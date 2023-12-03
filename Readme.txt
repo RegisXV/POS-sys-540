@@ -4,4 +4,4 @@ flask=3.0.0
 mysql-connector-python
 bs4=4.12
 flask_mysql
-
+Flask-Login

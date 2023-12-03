@@ -19,6 +19,8 @@ employeeID int Not NUll,
 Foreign Key (employeeID) References Employees(employeeID),
 Foreign Key (orderid) References pos (orderid));
 
+select * from orderlist;
+
 Create Table orderhistory(
 historyid int primary key auto_increment Not NUll,
 orderid int not null,

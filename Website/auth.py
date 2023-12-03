@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, Blueprint, flash, current_app
+from flask_login import login_required
 #from Website.menu_items import sql_menu_update 
 import re
 import mysql.connector
@@ -47,7 +48,7 @@ def login():
     return render_template("login.html", boolean=True)
 
 @auth.route('/order', methods=['GET', 'POST'])
-def place_order():
+def create_order():
     # Fetch the list of orders for the current employee
     if request.method == 'GET':
         employeeID = get_current_employee_id()
@@ -59,7 +60,6 @@ def place_order():
         try:
             ordername = request.form.get('ordername')
             
-            # Assuming your orderlist table has 'ordername' and 'employeeID' columns
             cur.execute("INSERT INTO orderlist (ordername, employeeID) VALUES (%s, %s)", (ordername, employeeID))
             
             menu_db.commit()
@@ -69,9 +69,40 @@ def place_order():
             return redirect(url_for('auth.place_order'))
         except Exception as e:
             flash(f'Error placing order: {e}', category='error')
+    cur.close()
+    return render_template('pos.html', orders=orders)
 
-    return render_template('orders.html', orders=orders)
+def fetch_menu_items_by_category(category):
+    cur.execute("SELECT itemname, cost FROM Itemlist WHERE category = %s", (category,))
+    menu_items = cur.fetchall()
 
+    cur.close()
+
+    return menu_items
+
+@auth.route('/place_order', methods=['GET', 'POST'])
+def place_order():
+    if request.method == 'POST':
+        try:
+            employeeID = int(request.form.get('employeeID'))
+            ordername = request.form.get('ordername')
+            
+            # Retrieve selected items from the checkbox values
+            order_items = request.form.getlist('order_item')
+            
+            # Process the order items as needed (e.g., save to the database)
+            
+            flash('Order Placed Successfully!', category='success')
+            return redirect('pos.html')
+        except Exception as e:
+            flash(f'Error placing order: {e}', category='error')
+
+
+    apps = fetch_menu_items_by_category('apps')
+    
+    
+    cur.close()
+    return render_template('pos.html', apps=apps)
 
 @auth.route('/Addemp', methods=['GET', 'POST']) #Add Employee 
 def addemp():
@@ -146,3 +177,7 @@ def logout():
     flash('Logout successful!', category='success')
     return redirect(url_for('auth.login'))
 
+@auth.route('/history')
+def order_history():
+
+    return render_template('orderhistory.html')
