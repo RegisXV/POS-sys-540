@@ -1,38 +1,31 @@
 from flask import Flask
+from dotenv import load_dotenv
+from flask_bootstrap import Bootstrap
 from flask_mysqldb import MySQL
-from flask_login import LoginManager
-def create_app():
-    app = Flask(__name__)
-    
-    app.secret_key = 'your secret key'
-    app.config['MYSQL_HOST'] = 'localhost'
-    app.config['MYSQL_PORT'] = 3306
-    app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'root'
-    app.config['MYSQL_DB'] = 'POS'
+from os import environ
 
-    
+app = Flask(__name__)
+app.config['SECRET_KEY'] = environ.get('SECRET_KEY')
 
-    mysql = MySQL(app)
-    print(mysql)
-    from .models import create_tables
+# Load environment variables from .flaskenv
+load_dotenv('.env')
 
-    app.mysql = mysql
-    with app.app_context():
-        create_tables()
+IP = environ.get('MYSQL_IP')
+USERNAME = environ.get('MYSQL_USER')
+PASSWORD = environ.get('MYSQL_PASSWORD')
+DB_NAME = environ.get('DB_NAME')
 
-    #login_manager = LoginManager(app)
-    #login_manager.login_view = 'auth.login'
+# Initialize MySQL extension with the Flask app
+app.config['MYSQL_HOST'] = IP
+app.config['MYSQL_USER'] = USERNAME
+app.config['MYSQL_PASSWORD'] = PASSWORD
+app.config['MYSQL_DB'] = DB_NAME
 
-    # Ensure tables are created when the app starts
-    with app.app_context():
-        from .models import create_tables
-        create_tables()
+mysql = MySQL(app)
 
-    from .views import views
-    from .auth import auth
+with app.app_context():
+    models.create_users_table()
 
-    app.register_blueprint(views, url_prefix='/')
-    app.register_blueprint(auth, url_prefix='/')
 
-    return app
+
+from app import models
