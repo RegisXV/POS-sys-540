@@ -9,7 +9,8 @@ menu_db = mysql.connector.connect(
 host="localhost",
 user="root",
 passwd="root",
-database="POS"
+database="POS",
+auth_plugin="mysql_native_password"
 )
 cur = menu_db.cursor(buffered=True)
 
@@ -79,13 +80,17 @@ def create_order():
             orders = cur.fetchall()
             cur.execute("INSERT INTO orderlist (ordername, employeeID) VALUES (%s, %s)", (ordername, employeeID))
             last_listID = cur.lastrowid
+            print(last_listID)
             cur.execute(f"CREATE TABLE IF NOT EXISTS {ordername}_{last_listID} (orderID int auto_increment primary key,\
                 employeeID int,listID int, ordername VARCHAR(255),ItemID int,Item_name VARCHAR(255),cost double,\
                     foreign key (employeeID) References Employees(employeeID),\
                         foreign key (listID) References orderlist(listid),\
                             foreign key (ItemID) References Itemlist(itemID))")
-            last_orderid = cur.lastrowid
-            cur.execute(f"Insert into orderlist(orderid) Values (%s,%s)",(last_orderid))
+            cur.execute("Select Last_Insert_ID()")
+            last_orderid = cur.fetchone()[0]
+            print(last_orderid)
+            cur.execute("Update orderlist set orderid=%s where listid=%s",(last_orderid,last_listID))
+            print(last_orderid)
             cur.execute(f"Insert into {ordername}_{last_listID}(ordername,employeeID,listID) Values (%s,%s,%s)",(ordername, employeeID, last_listID))
             menu_db.commit()
             flash('Order Placed Successfully!', category='success')

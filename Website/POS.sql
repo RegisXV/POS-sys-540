@@ -3,25 +3,25 @@ USE POS;
 drop database POS;
 
 Create Table pos (
-orderid int primary key auto_increment not null,
+posid int primary key auto_increment not null,
+orderid int,
 employeeID int not null,
 ordername varchar(100),
-itemID int not null,
-cart varchar(100),
-cost double,
 totalcost double);
+select*from pos;
 
 Create Table orderlist (
 listid int primary key auto_increment not null,
 orderid int,
 ordername varchar(100) Not NULL,
+posid int,
 employeeID int Not NUll,
 Foreign Key (employeeID) References Employees(employeeID),
-Foreign Key (orderid) References pos (orderid));
+Foreign Key (posid) References pos (posid));
 
 select * from orderlist;
 
-select * from jackson_19;
+select * from Jack_2;
 
 Create Table orderhistory(
 historyid int primary key auto_increment Not NUll,
@@ -87,8 +87,12 @@ tips int NOT NULL,
 total_pay int
  );
  
+select * from J_7;
+select*from Itsalive_10;
  
-
+ 
+ 
+select*from Letsgo_11;
 
 
 
@@ -117,3 +121,4 @@ END;
 //
 DELIMITER ;
 
+ALTER USER 'root'@'localhost' IDENTIFIED WITH 'mysql_native_password' BY 'root';
