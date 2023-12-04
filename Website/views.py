@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template
-from Website.menu_items import sql_menu_update
+# from Website.menu_items import sql_menu_update
 
 
 views = Blueprint('views', __name__)
@@ -10,6 +10,6 @@ def home():
 
 # @views.route('/menu')
 # def menu_view():
-#     bar_menu_update()
+#     # bar_menu_update()
 #     return render_template("menu.html")
 

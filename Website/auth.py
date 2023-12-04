@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, Blueprint, flash, current_app
-from Website.menu_items import sql_menu_update 
+# from Website.menu_items import sql_menu_update 
 import re
 import mysql.connector
 
@@ -7,7 +7,7 @@ import mysql.connector
 menu_db = mysql.connector.connect(
 host="localhost",
 user="root",
-passwd="root",
+passwd="password",
 database="POS"
 )
 cur = menu_db.cursor(buffered=True)
