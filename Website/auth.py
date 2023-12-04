@@ -51,26 +51,36 @@ def login():
 def create_order():
     # Fetch the list of orders for the current employee
     if request.method == 'GET':
-        employeeID = get_current_employee_id()
-        cur.execute("SELECT listid, ordername FROM orderlist WHERE employeeID = %s", (employeeID))
-        orders = cur.fetchall()
-    
+        try:
+            employeeID = get_current_employee_id()
+            cur.execute("SELECT listid, ordername FROM orderlist WHERE employeeID = %s", (employeeID,))
+            orders = cur.fetchall()
+            return render_template('orders.html', orders=orders)
+        except Exception as e:
+            flash(f'Error fetching orders: {e}', category='error')
 
     if request.method == 'POST':
         try:
+            employeeID = get_current_employee_id() 
             ordername = request.form.get('ordername')
-            
+            orders = cur.fetchall()
             cur.execute("INSERT INTO orderlist (ordername, employeeID) VALUES (%s, %s)", (ordername, employeeID))
             
             menu_db.commit()
             flash('Order Placed Successfully!', category='success')
             
-            # Redirect to the same page after placing the order
-            return redirect(url_for('auth.place_order'))
+            # Redirect to the orders page after placing the order
+            return redirect(url_for('auth.create_order'))
+         
         except Exception as e:
             flash(f'Error placing order: {e}', category='error')
+
     cur.close()
-    return render_template('pos.html', orders=orders)
+    return render_template('orders.html', orders=[])
+       
+
+
+
 
 def fetch_menu_items_by_category(category):
     cur.execute("SELECT itemname, cost FROM Itemlist WHERE category = %s", (category,))
