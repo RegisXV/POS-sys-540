@@ -21,6 +21,8 @@ Foreign Key (orderid) References pos (orderid));
 
 select * from orderlist;
 
+select * from jackson_19;
+
 Create Table orderhistory(
 historyid int primary key auto_increment Not NUll,
 orderid int not null,
@@ -74,6 +76,7 @@ pin VARCHAR (50) NOT NULL
  );
  insert into Employees(is_manager,firstname,lastname,PIN)
  Values (1,'Joe','Bob','0001');
+ select * from Employees;
 
  
  CREATE TABLE Employee_Salary (

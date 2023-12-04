@@ -1,66 +1,121 @@
-{% extends "base.html" %}
-{% block title %}Place Order{% endblock %}
-{% block content %}
-  <h2>Menu</h2>
-
-  <!-- Apps -->
-  <h3>Apps</h3>
-  <div class="menu-category">
-    <form method="POST" action="{{ url_for('auth.place_order') }}" id="orderForm">
-      {% for item in apps %}
-        <div class="menu-item">
-          {{ item.name }} - ${{ item.price }}
-          <div>
-            <button type="button" class="add-to-cart" data-item="{{ item.name }}|{{ item.category }}|{{ item.price }}">+</button>
-            <span id="quantity_{{ item.name }}">0</span>
-            <input type="hidden" name="quantity_{{ item.name }}" id="input_quantity_{{ item.name }}" value="0">
-            <div id="order_item_{{ item.name }}"></div>
-          </div>
-        </div>
-      {% endfor %}
-      <input type="hidden" name="order_items" id="orderItems">
-      <input type="submit" value="Place Order" class="btn btn-primary">
-    </form>
-  </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const orderItemsInput = document.getElementById('orderItems');
-
-      document.querySelectorAll('.add-to-cart').forEach(function(button) {
-        const itemName = button.getAttribute('data-item').split('|')[0];
-        const quantitySpan = document.getElementById('quantity_' + itemName);
-        const quantityInput = document.getElementById('input_quantity_' + itemName);
-        const orderItemDiv = document.getElementById('order_item_' + itemName);
-
-        button.addEventListener('click', function() {
-          let quantity = parseInt(quantityInput.value);
-          quantity++;
-          quantitySpan.textContent = quantity;
-          quantityInput.value = quantity;
-
-          // Display the item details in the order items list
-          const itemDetails = button.getAttribute('data-item').split('|');
-          const orderItemHtml = `<div>${itemDetails[0]} - $${itemDetails[2]} (Qty: ${quantity})</div>`;
-          orderItemDiv.innerHTML += orderItemHtml;
-
-          // Handle the order items
-          updateOrderItems();
-        });
-      });
-
-      function updateOrderItems() {
-        const orderItems = [];
-        document.querySelectorAll('[id^="input_quantity_"]').forEach(function(input) {
-          const itemName = input.id.split('_')[2];
-          const quantity = parseInt(input.value);
-          if (quantity > 0) {
-            orderItems.push(`${itemName}|${quantity}`);
-          }
-        });
-        orderItemsInput.value = orderItems.join(',');
-      }
-    });
-  </script>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menu</title>
+<style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 15px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #total {
+            font-weight: bold;
+        }
+</style>
+</head>
+<body>
+<h2>Menu</h2>
+ 
+    <form id="menuForm">
+<label for="item1">Appetizer:</label>
+<li>Angel wings $5.00</li><input type="number" id="item1" name="item1" min="0" value="0">
+<li>Ew Nachos $15.00</li><input type="number" id="item1a" name="item1a" min="0" value="0">
+<li>Scooby doo dog $4.00</li><input type="number" id="item1b" name="item1b" min="0" value="0">
+<li>The Bowling for soup $6.50</li><input type="number" id="item1c" name="item1c" min="0" value="0">
+<li>Papa John's mac and cheese bites $4.50</li><input type="number" id="item1d" name="item1d" min="0" value="0">
+ 
+<label for="item2">Entree:</label>
+<li>House of the DragonBurger $6.99</li><input type="number" id="item2" name="item2" min="0" value="0">
+<li>Dracula's Steak and Cheese $6.50</li><input type="number" id="item2a" name="item2a" min="0" value="0">
+<li>Rock n' Roll Chicken Sandwhich $8.75</li><input type="number" id="item2b" name="item2b" min="0" value="0">
+<li>Kyle's Fav Ham and Cheese $10.00</li><input type="number" id="item2c" name="item2c" min="0" value="0">
+<li>Sonic's chilli cheese dogs $4.50</li><input type="number" id="item2d" name="item2d" min="0" value="0">
+ 
+ 
+<label for="item3">Sides:</label>
+<li>The Big Fry $2.50</li><input type="number" id="item3" name="item3" min="0" value="0">
+<li>the small fry $2.00</li><input type="number" id="item3a" name="item3a" min="0" value="0">
+<li>The One ring $2.50</li><input type="number" id="item3b" name="item3b" min="0" value="0">
+<li>the small ring $2.00</li><input type="number" id="item3c" name="item3c" min="0" value="0">
+<li>Totters $3.00</li><input type="number" id="item3d" name="item3d" min="0" value="0">
+ 
+<label for="item4">Drinks:</label>
+<li>routebeer $1.00</li><input type="number" id="item4" name="item4" min="0" value="0">
+<li>Mcdonald's Coke $1.15</li><input type="number" id="item4a" name="item4a" min="0" value="0">
+<li>What you don't like tap waterbottle $2.00</li><input type="number" id="item4b" name="item4b" min="0" value="0">
+<li>Spritsy Sprite $1.50</li><input type="number" id="item4c" name="item4c" min="0" value="0">
+<li>Sherly's Temple of Doom $3.50</li><input type="number" id="item4d" name="item4d" min="0" value="0">
+ 
+<label for="item5">Desserts:</label>
+<li>Poptart $1.00</li><input type="number" id="item5" name="item5" min="0" value="0">
+<li>The Chocolate Volcano $5.00</li><input type="number" id="item5a" name="item5a" min="0" value="0">
+<li>Big ole Twinky $2.00</li><input type="number" id="item5b" name="item5b" min="0" value="0">
+<li>One scoop of icecream $1.50</li><input type="number" id="item5c" name="item5c" min="0" value="0">
+<li>How about two scoops of icecream $3.00</li><input type="number" id="item5d" name="item5d" min="0" value="0">
+ 
+<input type="number" id="item3" name="item3" min="0" value="0">
+ 
+        <button type="button" onclick="calculateTotal()">Calculate Total</button>
+</form>
+ 
+    <p id="total">Total Quantity: 0</p>
+ 
+    <script>
+        function calculateTotal() {
+            // Get values from input fields
+            var Appetizer = parseInt(document.getElementById('item1').value) || 0;
+            var Appetizer1 = parseInt(document.getElementById('item1a').value) || 0;
+            var Appetizer2 = parseInt(document.getElementById('item1b').value) || 0;
+            var Appetizer3 = parseInt(document.getElementById('item1c').value) || 0;
+            var Appetizer4 = parseInt(document.getElementById('item1d').value) || 0;
+ 
+            var Entree = parseInt(document.getElementById('item2').value) || 0;
+            var Entree1 = parseInt(document.getElementById('item2a').value) || 0;
+            var Entree2 = parseInt(document.getElementById('item2b').value) || 0;
+            var Entree3 = parseInt(document.getElementById('item2c').value) || 0;
+            var Entree4 = parseInt(document.getElementById('item2d').value) || 0;
+           
+            var Sides = parseInt(document.getElementById('item3').value) || 0;
+            var Sides1 = parseInt(document.getElementById('item3a').value) || 0;
+            var Sides2 = parseInt(document.getElementById('item3b').value) || 0;
+            var Sides3 = parseInt(document.getElementById('item3c').value) || 0;
+            var Sides4 = parseInt(document.getElementById('item3d').value) || 0;
+ 
+            var Drinks = parseInt(document.getElementById('item4').value) || 0;
+            var Drinks1 = parseInt(document.getElementById('item4a').value) || 0;
+            var Drinks2 = parseInt(document.getElementById('item4b').value) || 0;
+            var Drinks3 = parseInt(document.getElementById('item4c').value) || 0;
+            var Drinks4 = parseInt(document.getElementById('item4d').value) || 0;
+ 
+            var Desserts = parseInt(document.getElementById('item5').value) || 0;
+            var Desserts1 = parseInt(document.getElementById('item5a').value) || 0;
+            var Desserts2 = parseInt(document.getElementById('item5b').value) || 0;
+            var Desserts3 = parseInt(document.getElementById('item5c').value) || 0;
+            var Desserts4 = parseInt(document.getElementById('item5d').value) || 0;
+ 
+ 
+ 
+            // Calculate total quantity
+            var totalQuantity = Appetizer + Appetizer1 + Appetizer2 + Appetizer3 + Appetizer4 + Entree + Entree1 + Entree2 + Entree3 + Entree4 + Sides + Sides1 + Sides2 + Sides3 + Sides4 + Drinks + Drinks1 + Drinks2 + Drinks3 + Drinks4 + Desserts + Desserts1 + Desserts2 + Desserts3 + Desserts4
+ 
+            // Display total quantity
+            document.getElementById('total').innerText = 'Total Quantity: ' + totalQuantity;
+        }
+</script>
+</body>
+</html>
 

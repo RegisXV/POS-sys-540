@@ -30,22 +30,34 @@ def login():
             result = cur.fetchone()
 
             if result:
-                employeeID, is_manager = result
-                session['employeeID'] = employeeID  # Store employeeID in the session
+                    employeeID, is_manager = result
+                    session['employeeID'] = employeeID  # Store employeeID in the session
 
-                if is_manager:
-                    flash('Login successful as Manager!', category='success')
-                    return render_template("Manager.html")
-                else:
-                    flash('Login successful as Employee!', category='success')
+                    if is_manager:
+                        flash('Login successful as Manager!', category='success')
+                        return render_template("Manager.html")
+                    else:
+                        flash('Login successful as Employee!', category='success')
+                        return redirect(url_for('auth.create_order'))
+                        
+        except Exception as e:
+            flash(f'Error fetching orders: {e}', category='error')
+    return render_template("login.html", boolean=True)
+
+@auth.route('/portal', methods=['GET','POST'])
+def portal():
+
+                    # if request.method == 'GET':
+                    #     try:
+                    #         employeeID = get_current_employee_id()
+                    #         cur.execute("SELECT listid, ordername FROM orderlist WHERE employeeID = %s", (employeeID,))
+                    #         orders = cur.fetchall()
+                    #         print(orders)
+                    #         return render_template('orders.html', orders=orders)
+                    #     except Exception as e:
+                    #         flash(f'Error fetching orders: {e}', category='error')
                     return render_template("orders.html")
 
-        except Exception as e:
-            flash(f'Error checking PIN: {e}', category='error')
-
-        flash('Invalid pin, please try again.', category='error')
-
-    return render_template("login.html", boolean=True)
 
 @auth.route('/order', methods=['GET', 'POST'])
 def create_order():
@@ -55,6 +67,7 @@ def create_order():
             employeeID = get_current_employee_id()
             cur.execute("SELECT listid, ordername FROM orderlist WHERE employeeID = %s", (employeeID,))
             orders = cur.fetchall()
+            print(orders)
             return render_template('orders.html', orders=orders)
         except Exception as e:
             flash(f'Error fetching orders: {e}', category='error')
@@ -65,7 +78,15 @@ def create_order():
             ordername = request.form.get('ordername')
             orders = cur.fetchall()
             cur.execute("INSERT INTO orderlist (ordername, employeeID) VALUES (%s, %s)", (ordername, employeeID))
-            
+            last_listID = cur.lastrowid
+            cur.execute(f"CREATE TABLE IF NOT EXISTS {ordername}_{last_listID} (orderID int auto_increment primary key,\
+                employeeID int,listID int, ordername VARCHAR(255),ItemID int,Item_name VARCHAR(255),cost double,\
+                    foreign key (employeeID) References Employees(employeeID),\
+                        foreign key (listID) References orderlist(listid),\
+                            foreign key (ItemID) References Itemlist(itemID))")
+            last_orderid = cur.lastrowid
+            cur.execute(f"Insert into orderlist(orderid) Values (%s,%s)",(last_orderid))
+            cur.execute(f"Insert into {ordername}_{last_listID}(ordername,employeeID,listID) Values (%s,%s,%s)",(ordername, employeeID, last_listID))
             menu_db.commit()
             flash('Order Placed Successfully!', category='success')
             
