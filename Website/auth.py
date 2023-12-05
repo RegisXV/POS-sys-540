@@ -111,7 +111,24 @@ def create_order():
     cur.close()
     return render_template('orders.html', orders=[])
        
-
+@auth.route('/menu')
+def fetch_menu_items():
+    
+    cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'apps' ", )
+    apps = cur.fetchall()
+    print(apps)
+    cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'entrees' ", )
+    entrees = cur.fetchall()
+    print(entrees)
+    cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'sides' ", )
+    sides = cur.fetchall()
+    cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'drinks' ", )
+    drinks = cur.fetchall()
+    cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'desserts' ", )
+    desserts = cur.fetchall()
+    cur.close()
+    return render_template('pos2.html', apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts)
+    
 
 
 
@@ -225,32 +242,3 @@ def order_history():
 
     return render_template('orderhistory.html')
 
-
-@auth.route('/delete_order/<string:order_table>', methods=['POST'])
-def delete_order(order_table):
-    try:
-        
-        ordername, listID = order_table.split('_')
-
-        
-        listID = int(listID)
-        
-        cur.execute("DELETE FROM orderlist WHERE listID = %s", (listID,))
-
-        
-        cur.execute("DELETE FROM pos WHERE orderid = (SELECT orderid FROM orderlist WHERE listID = %s)", (listID,))
-
-       
-        cur.execute(f"ALTER TABLE {order_table} DROP FOREIGN KEY IF EXISTS fk_employee")
-       
-
-       
-        cur.execute(f"DROP TABLE IF EXISTS {order_table}")
-
-      
-
-        flash(f'Table {order_table} deleted successfully!', category='success')
-    except Exception as e:
-        flash(f'Error deleting table: {e}', category='error')
-
-    return redirect(url_for('auth.create_order'))
