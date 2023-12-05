@@ -10,7 +10,7 @@
         connection = mysql.connector.connect(
             host='localhost',
             user='root',
-            password='root',
+            password='password',
             auth_plugin='mysql_native_password'
         )
 #         connection = mysql.connector.connect(

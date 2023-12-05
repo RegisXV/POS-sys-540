@@ -8,7 +8,7 @@ import mysql.connector
 menu_db = mysql.connector.connect(
 host="localhost",
 user="root",
-passwd="root",
+passwd="password",
 database="POS"
 )
 cur = menu_db.cursor(buffered=True)

@@ -33,32 +33,7 @@ CREATE TABLE IF NOT EXISTS Menu_Items (
 menu_db.commit()
 
 # Menu item data
-entrees_list = {
-    "Jumbo Dog": 4.00, 
-    "Bacon Burger": 6.50, 
-    "Original Burger": 6.00, 
-    "Fried Chicken": 7.20, 
-    "Pasta": 8.10
-    }
 
-sides_list = {
-    "Curly Fries": 3.00, 
-    "Onion Rings": 2.00, 
-    "Tater Tots": 2.00
-}
-
-starters_list = {
-  "Fried Calamari": 12.00,
-  "Fried Mozzerella": 5.00, 
-  "Garlic Bread": 3.00
-  }
-
-drinks = {
- "Dark Beer": 4.00, 
- "Light Beer": 5.00, 
- "Hard Apple Cider": 6.00, 
- "Lemonade": 4.50
-}
 
 def existing_items():
     total_list = []
@@ -68,9 +43,9 @@ def existing_items():
     INOUT items_array TEXT)
     BEGIN
     DECLARE done BOOL DEFAULT false;
-    DECLARE Items VARCHAR(70) DEFAULT "";
+    DECLARE Items VARCHAR(80) DEFAULT "";
 
-    DECLARE value_cur CURSOR FOR SELECT ItemName FROM Menu_Items;
+    DECLARE value_cur CURSOR FOR SELECT ItemName FROM Itemlist;
     DECLARE CONTINUE HANDLER
     FOR NOT FOUND SET done = true;
 
@@ -99,63 +74,61 @@ def existing_items():
     
 
     for items_list in cur:
-        return items_list
-
-
-
-
+        total_list.append(items_list)
+    return total_list
+print(existing_items())
  # SQL function to insert menu items
-def sql_menu_insert(Category, items_list):
+# def sql_menu_insert(Category, items_list):
          
-    for item in items_list:
-        if item not in str(existing_items()):
-            cur.execute(f"INSERT INTO Menu_Items (ItemName, Category, MenuPrice) VALUES ('{item}', '{Category}',{items_list[item]})")
-    menu_db.commit()
+#     for item in items_list:
+#         if item not in str(existing_items()):
+#             cur.execute(f"INSERT INTO Menu_Items (ItemName, Category, MenuPrice) VALUES ('{item}', '{Category}',{items_list[item]})")
+#     menu_db.commit()
 
-sql_menu_insert("Entrees", entrees_list)
-sql_menu_insert("Sides", sides_list)
-sql_menu_insert("Starters", starters_list)
-sql_menu_insert("Drinks", drinks)
+# sql_menu_insert("Entrees", entrees_list)
+# sql_menu_insert("Sides", sides_list)
+# sql_menu_insert("Starters", starters_list)
+# sql_menu_insert("Drinks", drinks)
 
 
-def add_from_mysql(item_cat):
-    itemsList = []
-    cat_select = (f"SELECT ItemName FROM Menu_Items WHERE Category = '{item_cat}'")
-    cur.execute(cat_select)
+# def add_from_mysql(item_cat):
+#     itemsList = []
+#     cat_select = (f"SELECT ItemName FROM Menu_Items WHERE Category = '{item_cat}'")
+#     cur.execute(cat_select)
    
-    for item in cur:
-        itemsList.append(item)
-    return itemsList      
+#     for item in cur:
+#         itemsList.append(item)
+#     return itemsList      
   
 
-# HTML modification function (assuming the file paths are correct)
-def add_to_menu_html(item_list, item_id):
-    menu_dropdown = soup.find(attrs={'id': f'{item_id}'})
-    for item_el in item_list:
-        elements = str(item_el).strip("(),'")
-        new_item = soup.new_tag("a", class_="dropdown-item", href="#")
-        menu_dropdown.append(elements)
-        new_item.string = f"{item_el}"
+# # HTML modification function (assuming the file paths are correct)
+# def add_to_menu_html(item_list, item_id):
+#     menu_dropdown = soup.find(attrs={'id': f'{item_id}'})
+#     for item_el in item_list:
+#         elements = str(item_el).strip("(),'")
+#         new_item = soup.new_tag("a", class_="dropdown-item", href="#")
+#         menu_dropdown.append(elements)
+#         new_item.string = f"{item_el}"
 
-# File paths
-menu_fp = "templates/menu.html"
+# # File paths
+# menu_fp = "templates/menu.html"
 
-# Read HTML file
-with open(menu_fp, "r", encoding="utf8") as menu_page:
-#with open(menu_fp2, "r", encoding="utf8") as menu_page:
-    soup = BeautifulSoup(menu_page, "html.parser")
+# # Read HTML file
+# with open(menu_fp, "r", encoding="utf8") as menu_page:
+# #with open(menu_fp2, "r", encoding="utf8") as menu_page:
+#     soup = BeautifulSoup(menu_page, "html.parser")
 
-# # Add menu items to HTML
+# # # Add menu items to HTML
 
 
-# Replace "_class" attribute with "class"
-for tag in soup.find_all(attrs={'class_': True}):
-    tag['class'] = tag['class_']
-    del tag['class_']
+# # Replace "_class" attribute with "class"
+# for tag in soup.find_all(attrs={'class_': True}):
+#     tag['class'] = tag['class_']
+#     del tag['class_']
 
-# # Write the modified HTML back
-# with open(menu_fp, "w", encoding="utf8") as updated_menu:
-#     updated_menu.write(str(soup.prettify()))
+# # # Write the modified HTML back
+# # with open(menu_fp, "w", encoding="utf8") as updated_menu:
+# #     updated_menu.write(str(soup.prettify()))
 
 
 
