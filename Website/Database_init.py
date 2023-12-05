@@ -10,7 +10,8 @@ def create_database():
         connection = mysql.connector.connect(
             host='localhost',
             user='root',
-            password='root'
+            password='root',
+            auth_plugin='mysql_native_password'
         )
 
         cursor = connection.cursor()

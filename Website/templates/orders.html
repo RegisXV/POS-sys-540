@@ -11,12 +11,12 @@
     <!-- Display list of orders -->
     <ul>
         {% for order in orders %}
-            <li>Order {{ loop.index }}: {{ order[1] }}</li>
+            <li>Order {{ loop.index }}: {{ order[1] }} 
         {% endfor %}
     </ul>
 
     <!-- Form to create a new order -->
-    <form method="POST" action="{{ url_for('auth.place_order') }}">
+    <form method="POST" action="{{ url_for('auth.create_order') }}">
         <label for="ordername">Order Name:</label>
         <input type="text" id="ordername" name="ordername" required>
         <button type="submit">Create Order</button>

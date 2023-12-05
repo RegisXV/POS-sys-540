@@ -9,7 +9,8 @@ menu_db = mysql.connector.connect(
 host="localhost",
 user="root",
 passwd="root",
-database="POS"
+database="POS",
+auth_plugin="mysql_native_password"
 )
 cur = menu_db.cursor(buffered=True)
 
@@ -30,47 +31,87 @@ def login():
             result = cur.fetchone()
 
             if result:
-                employeeID, is_manager = result
-                session['employeeID'] = employeeID  # Store employeeID in the session
+                    employeeID, is_manager = result
+                    session['employeeID'] = employeeID  # Store employeeID in the session
 
-                if is_manager:
-                    flash('Login successful as Manager!', category='success')
-                    return render_template("Manager.html")
-                else:
-                    flash('Login successful as Employee!', category='success')
+                    if is_manager:
+                        flash('Login successful as Manager!', category='success')
+                        return render_template("Manager.html")
+                    else:
+                        flash('Login successful as Employee!', category='success')
+                        return redirect(url_for('auth.create_order'))
+                        
+        except Exception as e:
+            flash(f'Error fetching orders: {e}', category='error')
+    return render_template("login.html", boolean=True)
+
+@auth.route('/portal', methods=['GET','POST'])
+def portal():
+
+                    # if request.method == 'GET':
+                    #     try:
+                    #         employeeID = get_current_employee_id()
+                    #         cur.execute("SELECT listid, ordername FROM orderlist WHERE employeeID = %s", (employeeID,))
+                    #         orders = cur.fetchall()
+                    #         print(orders)
+                    #         return render_template('orders.html', orders=orders)
+                    #     except Exception as e:
+                    #         flash(f'Error fetching orders: {e}', category='error')
                     return render_template("orders.html")
 
-        except Exception as e:
-            flash(f'Error checking PIN: {e}', category='error')
-
-        flash('Invalid pin, please try again.', category='error')
-
-    return render_template("login.html", boolean=True)
 
 @auth.route('/order', methods=['GET', 'POST'])
 def create_order():
     # Fetch the list of orders for the current employee
     if request.method == 'GET':
-        employeeID = get_current_employee_id()
-        cur.execute("SELECT listid, ordername FROM orderlist WHERE employeeID = %s", (employeeID))
-        orders = cur.fetchall()
-    
+        try:
+            employeeID = get_current_employee_id()
+            cur.execute("SELECT listid, ordername FROM orderlist WHERE employeeID = %s", (employeeID,))
+            orders = cur.fetchall()
+            print(orders)
+            return render_template('orders.html', orders=orders)
+        except Exception as e:
+            flash(f'Error fetching orders: {e}', category='error')
 
     if request.method == 'POST':
         try:
+            employeeID = get_current_employee_id() 
             ordername = request.form.get('ordername')
-            
+            orders = cur.fetchall()
             cur.execute("INSERT INTO orderlist (ordername, employeeID) VALUES (%s, %s)", (ordername, employeeID))
-            
+            last_listID = cur.lastrowid
+            print(last_listID)
+            cur.execute(f"CREATE TABLE IF NOT EXISTS {ordername}_{last_listID} (orderID int auto_increment primary key, posid int,\
+                employeeID int,listID int, ordername VARCHAR(255),ItemID int,Item_name VARCHAR(255),cost double,quantity int,\
+                    foreign key (employeeID) References Employees(employeeID),\
+                        foreign key (listID) References orderlist(listid),\
+                            foreign key (ItemID) References Itemlist(itemID))")
+            cur.execute("Select Last_Insert_ID()")
+            last_orderid = cur.fetchone()[0]
+            print(last_orderid)
+            cur.execute("Update orderlist set orderid=%s where listid=%s",(last_orderid,last_listID))
+            print(last_orderid)
+            cur.execute(f"Insert into {ordername}_{last_listID}(ordername,employeeID,listID) Values (%s,%s,%s)",(ordername, employeeID, last_listID))
+            cur.execute("Insert into pos(orderid,employeeID,ordername) Values (%s,%s,%s)",(last_orderid,employeeID,ordername))
+            cur.execute("Select Last_Insert_ID()")
+            last_posid = cur.fetchone()[0]
+            cur.execute("Update orderlist set posid=%s where listid=%s",(last_posid,last_listID))
+            cur.execute(f"Update {ordername}_{last_listID} set posid=%s where listid=%s", (last_posid,last_listID))
             menu_db.commit()
             flash('Order Placed Successfully!', category='success')
             
-            # Redirect to the same page after placing the order
-            return redirect(url_for('auth.place_order'))
+            # Redirect to the orders page after placing the order
+            return redirect(url_for('auth.create_order'))
+         
         except Exception as e:
             flash(f'Error placing order: {e}', category='error')
+
     cur.close()
-    return render_template('pos.html', orders=orders)
+    return render_template('orders.html', orders=[])
+       
+
+
+
 
 def fetch_menu_items_by_category(category):
     cur.execute("SELECT itemname, cost FROM Itemlist WHERE category = %s", (category,))
