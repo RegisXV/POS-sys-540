@@ -94,6 +94,8 @@ select*from Itsalive_10;
  
 select*from Letsgo_11;
 
+select*from Ara_16;
+
 
 
 -- Triggers 
