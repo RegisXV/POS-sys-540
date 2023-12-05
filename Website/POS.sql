@@ -19,18 +19,18 @@ employeeID int Not NUll,
 Foreign Key (employeeID) References Employees(employeeID),
 Foreign Key (posid) References pos (posid));
 
-select * from orderlist;
 
-select * from Jack_2;
+
+select * from Brock_3;
 
 Create Table orderhistory(
 historyid int primary key auto_increment Not NUll,
-orderid int not null,
+posID int not null,
 employeeID int not null,
 ordername varchar(100) Not NUll,
 total double,
 Foreign key (employeeID) References Employees(employeeID),
-Foreign Key (orderid) References pos (orderid));
+Foreign Key (posID) References pos (posid));
 
 CREATE TABLE Itemlist  (
 itemID int primary key auto_increment NOT NULL,
@@ -66,7 +66,7 @@ Values ("Sonic's chilli cheese dogs",'entrees',7.99),
 ('One scoop of icecream','desserts',1.50),
 ('How about two scoops of icecream','desserts',3.00);
 
-
+select * from Itemlist;
 CREATE TABLE Employees (
 employeeID int primary key auto_increment,
 is_manager boolean not null default 0,
@@ -99,17 +99,6 @@ select*from Ara_16;
 
 
 -- Triggers 
-DELIMITER //
-CREATE TRIGGER trg_insert_orderlist
-AFTER INSERT ON pos
-FOR EACH ROW
-BEGIN
-    INSERT INTO orderlist (orderid, ordername, employeeID)
-    VALUES (NEW.orderid, NEW.ordername, NEW.employeeID);
-END;
-//
-DELIMITER ;
-
 DELIMITER //
 CREATE TRIGGER trg_delete_orderlist_and_insert_orderhistory
 BEFORE DELETE ON pos

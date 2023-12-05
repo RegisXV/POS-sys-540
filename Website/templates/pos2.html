@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu1</title>
+</head>
+<body>
+    <h1>Menu1</h1>
+
+    <!-- Display list of orders -->
+    <ul>
+        {% for app in apps %}
+            <li>Appetizers {{ app[0] }}: {{ app[1] }} : {{ app[2] }}$
+                <button onclick="accessOrder('{{ loop.index }}')">+</button>
+                <button onclick="deleteOrder('{{ loop.index }}', '{{ app[1] }}')">-</button>
+            </li>
+        {% endfor %}
+    </ul>
+    
+    <ul>
+        {% for entree in entrees %}
+            <li>Entrees {{ entree[0] }}: {{ entree[1] }} : {{ entree[2] }}$
+                <button onclick="accessOrder('{{ loop.index }}')">+</button>
+                <button onclick="deleteOrder('{{ loop.index }}', '{{ entree[1] }}')">-</button>
+            </li>
+        {% endfor %}
+    </ul>
+    
+    <ul>
+        {% for side in sides %}
+            <li>Entrees {{ side[0] }}: {{ side[1] }} : {{ side[2] }}$
+                <button onclick="accessOrder('{{ loop.index }}')">+</button>
+                <button onclick="deleteOrder('{{ loop.index }}', '{{ side[1] }}')">-</button>
+            </li>
+        {% endfor %}
+    </ul>
+    
+    <ul>
+        {% for drink in drinks %}
+            <li>Drinks {{ drink[0] }}: {{ drink[1] }} : {{ drink[2] }}$
+                <button onclick="accessOrder('{{ loop.index }}')">+</button>
+                <button onclick="deleteOrder('{{ loop.index }}', '{{ drink[1] }}')">-</button>
+            </li>
+        {% endfor %}
+    </ul>
+    
+    <ul>
+        {% for dessert in desserts %}
+            <li>Entrees {{ dessert[0] }}: {{ dessert[1] }} : {{ dessert[2] }}$
+                <button onclick="accessOrder('{{ loop.index }}')">+</button>
+                <button onclick="deleteOrder('{{ loop.index }}', '{{ dessert[1] }}')">-</button>
+            </li>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>
