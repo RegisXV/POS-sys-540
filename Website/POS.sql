@@ -1,49 +1,83 @@
 create DATABASE POS;
 USE POS;
+drop database POS;
 
-CREATE TABLE Menu (
-ItemID int primary key,
-Itemname varchar(100)
-);
+Create Table pos (
+posid int primary key auto_increment not null,
+orderid int,
+employeeID int not null,
+ordername varchar(100),
+totalcost double);
+select*from pos;
 
-CREATE TABLE ItemStock (
-ItemID int primary key NOT NULL,
-Itemname varchar(100) NOT NULL,
-totalQuant int NOT NULL,
-ItemCost int NOT NULL);
+Create Table orderlist (
+listid int primary key auto_increment not null,
+orderid int,
+ordername varchar(100) Not NULL,
+posid int,
+employeeID int Not NUll,
+Foreign Key (employeeID) References Employees(employeeID),
+Foreign Key (posid) References pos (posid));
+
+select * from orderlist;
+
+select * from Jack_2;
+
+Create Table orderhistory(
+historyid int primary key auto_increment Not NUll,
+orderid int not null,
+employeeID int not null,
+ordername varchar(100) Not NUll,
+total double,
+Foreign key (employeeID) References Employees(employeeID),
+Foreign Key (orderid) References pos (orderid));
+
+CREATE TABLE Itemlist  (
+itemID int primary key auto_increment NOT NULL,
+itemname varchar(100) NOT NULL,
+category varchar(255) not Null,
+cost double NOT NULL);
 
 
-delimiter //
-CREATE TRIGGER receivedItem BEFORE UPDATE on ItemStock
-FOR EACH ROW
-BEGIN
-SET @AddQuant := old.totalQuant + new.totalQuant;
-SET @MinusQuant := old.totalQuant - new.TotalQuant;
+Insert into Itemlist(itemname,category,cost) 
+Values ("Sonic's chilli cheese dogs",'entrees',7.99),
+('House of the DragonBurger','entrees',6.99),
+("Dracula's Steak and Cheese",'entrees',6.50),
+("Rock n' Roll Chicken Sandwhich",'entrees',8.75),
+("Kyle's Fav Ham and Cheese",'entrees',10.00),
+('Angel wings','apps',5.00),
+('Ew Nachos','apps',15.00),
+('Scooby doo dog','apps',4.00),
+('The Bowling for soup','apps',6.50),
+("Papa John's mac and cheese bites",'apps',4.50),
+('The Big Fry','sides',2.50),
+('the small fry','sides',2.00),
+('The One ring','sides',2.50),
+('the small ring','sides',2.00),
+('Totters','sides',3.00),
+('routebeer','drinks',1.00),
+("Mcdonald's Coke",'drinks',1.15),
+("What you don't like tap waterbottle",'drinks',2.00),
+('Spritsy Sprite','drinks',1.50),
+("Sherly's Temple of Doom", 'drinks',3.50),
+('Poptart','desserts',1.00),
+('The Chocolate Volcano','desserts',5.00),
+('Big ole Twinky','desserts',2.00),
+('One scoop of icecream','desserts',1.50),
+('How about two scoops of icecream','desserts',3.00);
 
-	IF new.totalQuant >= 0 THEN 
-		SET new.totalQuant = @AddQuant;
-	ELSEIF new.totalQuant > 0 THEN
-		SET new.totalQuant = @MinusQuant;
-	ELSE 
-		SET new.totalQuant = @addQuant;
-	END IF;
-END;//
-delimiter ;
-
-
-CREATE TABLE Managers (
-ID int auto_increment,
-firstname VARCHAR (60) NOT NULL,
-lastname VARCHAR (60) NOT NULL,
-PIN VARCHAR (50) NOT NULL
-);
 
 CREATE TABLE Employees (
 employeeID int primary key auto_increment,
+is_manager boolean not null default 0,
 firstname varchar(60) NOT NULL,
 lastname varchar(60)  NOT NULL,
-PIN VARCHAR (50) NOT NULL
+pin VARCHAR (50) NOT NULL
  );
+ insert into Employees(is_manager,firstname,lastname,PIN)
+ Values (1,'Joe','Bob','0001');
+ select * from Employees;
+
  
  CREATE TABLE Employee_Salary (
 firstname varchar(60),
@@ -53,75 +87,38 @@ tips int NOT NULL,
 total_pay int
  );
  
- #required salary is $25000
-delimiter //
-CREATE TRIGGER min_server_pay BEFORE UPDATE ON Employee_Salary 
-FOR EACH ROW 
-BEGIN
-	IF new.baseSalary + new.tips < 25000 THEN
-		SET new.baseSalary = 25000 - new.tips; 
-        SET new.total_pay = new.baseSalary + new.tips;
-	END IF;
-END;//
-delimiter ;
-	
-CREATE TABLE Sales_Table (
-ListID int,
-OrderID int,
-EmployeeID int,
-totalPrice int );
-
-CREATE TABLE Menu_Items (
-ID int auto_increment primary key,
-Entrees varchar(100),
-Sides varchar (100),
-Appetizers varchar(100),
-Drinks varchar(100),
-menuPrice decimal(3,2)
-);
+select * from J_7;
+select*from Itsalive_10;
+ 
+ 
+ 
+select*from Letsgo_11;
 
 
 
-delimiter//
-CREATE TRIGGER item_POS_update AFTER INSERT ON POS
+-- Triggers 
+DELIMITER //
+CREATE TRIGGER trg_insert_orderlist
+AFTER INSERT ON pos
 FOR EACH ROW
-BEGIN 
-END;//
-delimiter// ;
+BEGIN
+    INSERT INTO orderlist (orderid, ordername, employeeID)
+    VALUES (NEW.orderid, NEW.ordername, NEW.employeeID);
+END;
+//
+DELIMITER ;
 
-# will update item quantity in inventory after order has been placed.  Maybe create separate tables for food base price and sale price?
+DELIMITER //
+CREATE TRIGGER trg_delete_orderlist_and_insert_orderhistory
+BEFORE DELETE ON pos
+FOR EACH ROW
+BEGIN
 
+    INSERT INTO orderhistory (orderid, ordername, employeeID, total)
+    VALUES (OLD.orderid, OLD.ordername, OLD.employeeID, OLD.totalcost);
+    DELETE FROM orderlist WHERE orderid = OLD.orderid;
+END;
+//
+DELIMITER ;
 
-
-
-
-#### Original Code #######
-
-
--- Create Database POS;
--- use POS;
--- Create table manager(id INT AUTO_INCREMENT,
--- firstname char (255),
--- lastname char(255),
--- pin Varchar(255) Primary Key,
--- Foreign Key (id) References employees(employee_id));
-
--- drop table manager;
--- Insert into manager(firstname,lastname,pin)
--- Values('Joe','Bob','0001');
-
--- Select* from manager;
-
--- CREATE TABLE employees (
-    -- employee_id INT AUTO_INCREMENT PRIMARY KEY,
-    -- firstname VARCHAR(255) NOT NULL,
-    -- lastname VARCHAR(255) NOT NULL,
-    -- pin VARCHAR(255) NOT NULL
--- );
--- Insert into employees(firstname,lastname,pin)
--- Values('Joe','Bob','0001');
--- drop table employees;
-
-
-
-
+ALTER USER 'root'@'localhost' IDENTIFIED WITH 'mysql_native_password' BY 'root';

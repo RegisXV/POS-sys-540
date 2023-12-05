@@ -7,6 +7,12 @@
 #         # Get the path to the current script
 #         script_dir = os.path.dirname(os.path.abspath(__file__))
 
+        connection = mysql.connector.connect(
+            host='localhost',
+            user='root',
+            password='root',
+            auth_plugin='mysql_native_password'
+        )
 #         connection = mysql.connector.connect(
 #             host='localhost',
 #             user='root',
