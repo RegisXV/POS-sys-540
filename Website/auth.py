@@ -40,6 +40,8 @@ def login():
                     else:
                         flash('Login successful as Employee!', category='success')
                         return redirect(url_for('auth.create_order'))
+            else:
+                flash('Invalid pin please try again', category='error')
                         
         except Exception as e:
             flash(f'Error fetching orders: {e}', category='error')

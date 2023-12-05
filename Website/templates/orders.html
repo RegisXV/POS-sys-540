@@ -12,6 +12,7 @@
     <ul>
         {% for order in orders %}
             <li>Order {{ loop.index }}: {{ order[1] }} 
+                <button onclick="location.href='/details/{{ loop.index }}'">Details</button>
         {% endfor %}
     </ul>
 
