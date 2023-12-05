@@ -12,7 +12,8 @@
     <ul>
         {% for order in orders %}
             <li>Order {{ loop.index }}: {{ order[1] }} 
-                <button onclick="location.href='/details/{{ loop.index }}'">Details</button>
+                <button onclick="accessOrder('{{ loop.index }}')">Access Order</button>
+                <button onclick="deleteOrder('{{ loop.index }}', '{{ order[1] }}')">Delete Order</button>
         {% endfor %}
     </ul>
 
@@ -24,5 +25,38 @@
     </form>
 
     <button onclick=location.href="/logout">Logout</button>
+    <script>
+        function accessOrder(index) {
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/access_order';  // Replace with your access order route
+
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'order_index';
+            input.value = index;
+
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        function deleteOrder(index, orderTable) {
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/delete_order/' + orderTable;
+        
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'order_index';
+            input.value = index;
+        
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
+</body>
+</html>
 </body>
 </html>

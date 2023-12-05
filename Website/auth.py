@@ -224,3 +224,33 @@ def logout():
 def order_history():
 
     return render_template('orderhistory.html')
+
+
+@auth.route('/delete_order/<string:order_table>', methods=['POST'])
+def delete_order(order_table):
+    try:
+        
+        ordername, listID = order_table.split('_')
+
+        
+        listID = int(listID)
+        
+        cur.execute("DELETE FROM orderlist WHERE listID = %s", (listID,))
+
+        
+        cur.execute("DELETE FROM pos WHERE orderid = (SELECT orderid FROM orderlist WHERE listID = %s)", (listID,))
+
+       
+        cur.execute(f"ALTER TABLE {order_table} DROP FOREIGN KEY IF EXISTS fk_employee")
+       
+
+       
+        cur.execute(f"DROP TABLE IF EXISTS {order_table}")
+
+      
+
+        flash(f'Table {order_table} deleted successfully!', category='success')
+    except Exception as e:
+        flash(f'Error deleting table: {e}', category='error')
+
+    return redirect(url_for('auth.create_order'))
