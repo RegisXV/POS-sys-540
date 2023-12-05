@@ -5,4 +5,12 @@
 <button onclick=location.href="/remove_employee">Remove Employee</button>
 <button onclick=location.href="/order">Access POS</button>
 <button onclick=location.href="/logout">Logout</button>
+<h1>Order History</h1>
+
+<!-- Display list of orders -->
+<ul>
+    {% for h in history %}
+        <li>HistoryID {{ h[0] }}: OrderID{{ h[1] }}: EmployeeID {{ h[2] }}: Ordername {{ h[3] }}: Order Total {{ h[4] }}
+    {% endfor %}
+</ul>
 {% endblock %}

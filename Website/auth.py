@@ -111,6 +111,19 @@ def create_order():
     cur.close()
     return render_template('orders.html', orders=[])
        
+@auth.route('/order/Delete', methods=['POST'])
+def delete_order_list():
+    try:
+        order_id = request.form.get('order_id')
+        
+        cur.execute("Delete pos where orderid=%s",(order_id))
+
+        flash('Order Deleted Successfully!', category='success')
+    except Exception as e:
+        flash(f'Error deleting order: {e}', category='error')
+
+    return redirect(url_for('auth.create_order'))
+    
 @auth.route('/menu')
 def fetch_menu_items():
     
@@ -130,39 +143,6 @@ def fetch_menu_items():
     return render_template('pos2.html', apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts)
     
 
-
-
-def fetch_menu_items_by_category(category):
-    cur.execute("SELECT itemname, cost FROM Itemlist WHERE category = %s", (category,))
-    menu_items = cur.fetchall()
-
-    cur.close()
-
-    return menu_items
-
-@auth.route('/place_order', methods=['GET', 'POST'])
-def place_order():
-    if request.method == 'POST':
-        try:
-            employeeID = int(request.form.get('employeeID'))
-            ordername = request.form.get('ordername')
-            
-            # Retrieve selected items from the checkbox values
-            order_items = request.form.getlist('order_item')
-            
-            # Process the order items as needed (e.g., save to the database)
-            
-            flash('Order Placed Successfully!', category='success')
-            return redirect('pos.html')
-        except Exception as e:
-            flash(f'Error placing order: {e}', category='error')
-
-
-    apps = fetch_menu_items_by_category('apps')
-    
-    
-    cur.close()
-    return render_template('pos.html', apps=apps)
 
 @auth.route('/Addemp', methods=['GET', 'POST']) #Add Employee 
 def addemp():
@@ -239,6 +219,8 @@ def logout():
 
 @auth.route('/history')
 def order_history():
+    cur.execute("SELECT * from orderhistory" )
+    history = cur.fetchall()
 
-    return render_template('orderhistory.html')
+    return render_template('orderhistory.html',history=history)
 
