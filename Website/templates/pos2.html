@@ -29,7 +29,7 @@
     
     <ul>
         {% for side in sides %}
-            <li>Entrees {{ side[0] }}: {{ side[1] }} : {{ side[2] }}$
+            <li>Sides {{ side[0] }}: {{ side[1] }} : {{ side[2] }}$
                 <button onclick="accessOrder('{{ loop.index }}')">+</button>
                 <button onclick="deleteOrder('{{ loop.index }}', '{{ side[1] }}')">-</button>
             </li>
@@ -47,7 +47,7 @@
     
     <ul>
         {% for dessert in desserts %}
-            <li>Entrees {{ dessert[0] }}: {{ dessert[1] }} : {{ dessert[2] }}$
+            <li>Desserts {{ dessert[0] }}: {{ dessert[1] }} : {{ dessert[2] }}$
                 <button onclick="accessOrder('{{ loop.index }}')">+</button>
                 <button onclick="deleteOrder('{{ loop.index }}', '{{ dessert[1] }}')">-</button>
             </li>

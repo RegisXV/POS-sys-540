@@ -21,16 +21,16 @@ Foreign Key (posid) References pos (posid));
 
 
 
-select * from Brock_3;
+select * from Jack_2;
 
 Create Table orderhistory(
 historyid int primary key auto_increment Not NUll,
 posID int not null,
 employeeID int not null,
 ordername varchar(100) Not NUll,
-total double,
-Foreign key (employeeID) References Employees(employeeID),
-Foreign Key (posID) References pos (posid));
+total double);
+
+
 
 CREATE TABLE Itemlist  (
 itemID int primary key auto_increment NOT NULL,
@@ -90,7 +90,18 @@ total_pay int
 select * from J_7;
 select*from Itsalive_10;
  
- 
+ start transaction;
+ delete from jack_2 where listID=2;
+ select*from jack_2;
+ select*from orderlist;
+ delete from orderlist where posid=1;
+ select * from pos;
+ delete from pos where posid=1;
+ select*from pos;
+ select* from orderlist;
+ select*from orderhistory;
+ rollback;
+ drop table jack_2;
  
 select*from Letsgo_11;
 
@@ -100,16 +111,16 @@ select*from Ara_16;
 
 -- Triggers 
 DELIMITER //
-CREATE TRIGGER trg_delete_orderlist_and_insert_orderhistory
+CREATE TRIGGER trg_delete_pos_and_insert_orderhistory
 BEFORE DELETE ON pos
 FOR EACH ROW
 BEGIN
-
-    INSERT INTO orderhistory (orderid, ordername, employeeID, total)
-    VALUES (OLD.orderid, OLD.ordername, OLD.employeeID, OLD.totalcost);
-    DELETE FROM orderlist WHERE orderid = OLD.orderid;
+	INSERT INTO orderhistory (posid, employeeID, ordername,  total)
+    VALUES (OLD.posid, OLD.employeeID, OLD.ordername,  OLD.totalcost);
 END;
 //
 DELIMITER ;
 
 ALTER USER 'root'@'localhost' IDENTIFIED WITH 'mysql_native_password' BY 'root';
+
+
