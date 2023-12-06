@@ -111,6 +111,7 @@ def create_order():
     cur.close()
     return render_template('orders.html', orders=[])
        
+# DELETE ORDER LIST FUNCTION IS HERE AND REQUIRES GET & POST       
 @auth.route('/order/Delete', methods=['GET','POST'])
 def delete_order_list():
     try:
