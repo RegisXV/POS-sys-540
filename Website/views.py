@@ -16,4 +16,3 @@ def pos():
 # def menu_view():
 #     bar_menu_update()
 #     return render_template("menu.html")
-

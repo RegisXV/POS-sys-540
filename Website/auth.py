@@ -223,4 +223,3 @@ def order_history():
     history = cur.fetchall()
 
     return render_template('orderhistory.html',history=history)
-
