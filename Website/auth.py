@@ -245,12 +245,33 @@ def access_order():
     try:
         orderid = request.form.get('order_id')
         ordername = request.form.get('order_name')
-        details, apps, entrees, sides, drinks, desserts = fetch_menu_items(orderid, ordername)
+        details, apps, entrees, sides, drinks, desserts = fetch_menu_items1(orderid, ordername)
         print(details,apps,entrees,sides,drinks,desserts)
         return render_template('pos2.html', details=details, apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts)
         
     except Exception as e:
         flash(f'Error accessing order: {e}', category='error')
+        return redirect(url_for('auth.create_order'))
+    
+def fetch_menu_items1(orderid,ordername):
+    try:
+        cur.execute (f"Select posid, employeeID, ordername, listID from {ordername}_{orderid} ")
+        details = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'apps' ", )
+        apps = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'entrees' ", )
+        entrees = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'sides' ", )
+        sides = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'drinks' ", )
+        drinks = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'desserts' ", )
+        desserts = cur.fetchall()
+        print(details,apps,entrees,sides,drinks,desserts)
+        return (details, apps, entrees, sides, drinks, desserts)
+    except Exception as e:
+    
+        flash(f'Error fetching menu items: {e}', category='error')
         return redirect(url_for('auth.create_order'))
 
 

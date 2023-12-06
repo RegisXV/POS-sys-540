@@ -9,9 +9,12 @@
     <h1>Menu</h1>
     
     <ul>
+        Pos Info 
         <li>
-            Pos Info
-            PosID-{{ details[0] }} EmployeeID-{{ details[1] }} OrderName#-{{ details[2] }} {{ details[3] }}
+            
+        {% for detail in details %}
+            PosID - {{ detail[0] }} EmployeeID - {{ detail[1] }} OrderName # - {{ detail[2] }} {{ detail[3] }}
+        {% endfor %}
         </li>
     </ul>
 
