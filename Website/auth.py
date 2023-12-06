@@ -111,22 +111,26 @@ def create_order():
 
     
 @auth.route('/menu')
-def fetch_menu_items():
-    cur.execute ("if exists select * from ")
-    cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'apps' ", )
-    apps = cur.fetchall()
-    print(apps)
-    cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'entrees' ", )
-    entrees = cur.fetchall()
-    print(entrees)
-    cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'sides' ", )
-    sides = cur.fetchall()
-    cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'drinks' ", )
-    drinks = cur.fetchall()
-    cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'desserts' ", )
-    desserts = cur.fetchall()
-    cur.close()
-    return render_template('pos2.html', apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts)
+def fetch_menu_items(orderid,ordername):
+    try:
+        cur.execute (f"Select posid, employeeID, ordername, listID from {ordername}_{orderid} ")
+        details = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'apps' ", )
+        apps = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'entrees' ", )
+        entrees = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'sides' ", )
+        sides = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'drinks' ", )
+        drinks = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'desserts' ", )
+        desserts = cur.fetchall()
+        print(details,apps,entrees,sides,drinks,desserts)
+        return render_template('pos2.html', details=details, apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts)
+    except Exception as e:
+    
+        flash(f'Error fetching menu items: {e}', category='error')
+        return redirect(url_for('auth.create_order'))
     
 
 
@@ -234,15 +238,21 @@ def delete_order():
         menu_db.rollback()
         flash(f'Error deleting order: {e}', category='error')
         return redirect(url_for('auth.create_order'))
+
+
 @auth.route('/access_order', methods=['GET','POST'])
 def access_order():
     try:
         orderid = request.form.get('order_id')
         ordername = request.form.get('order_name')
-        fetch_menu_items(orderid,ordername)
-
-    
+        details, apps, entrees, sides, drinks, desserts = fetch_menu_items(orderid, ordername)
+        print(details,apps,entrees,sides,drinks,desserts)
+        return render_template('pos2.html', details=details, apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts)
+        
     except Exception as e:
         flash(f'Error accessing order: {e}', category='error')
+        return redirect(url_for('auth.create_order'))
+
+
         
 

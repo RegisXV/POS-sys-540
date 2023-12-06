@@ -3,10 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu1</title>
+    <title>Menu</title>
 </head>
 <body>
-    <h1>Menu1</h1>
+    <h1>Menu</h1>
+    
+    <ul>
+        <li>
+            Pos Info
+            PosID-{{ details[0] }} EmployeeID-{{ details[1] }} OrderName#-{{ details[2] }} {{ details[3] }}
+        </li>
+    </ul>
 
     <!-- Display list of orders -->
     <ul>
