@@ -82,7 +82,6 @@ def create_order():
             orders = cur.fetchall()
             cur.execute("INSERT INTO orderlist (ordername, employeeID) VALUES (%s, %s)", (ordername, employeeID))
             last_listID = cur.lastrowid
-            print(last_listID)
             cur.execute(f"CREATE TABLE IF NOT EXISTS {ordername}_{last_listID} (orderID int auto_increment primary key, posid int,\
                 employeeID int,listID int, ordername VARCHAR(255),ItemID int,Item_name VARCHAR(255),cost double,quantity int,\
                     foreign key (employeeID) References Employees(employeeID),\
@@ -90,9 +89,7 @@ def create_order():
                             foreign key (ItemID) References Itemlist(itemID))")
             cur.execute("Select Last_Insert_ID()")
             last_orderid = cur.fetchone()[0]
-            print(last_orderid)
             cur.execute("Update orderlist set orderid=%s where listid=%s",(last_orderid,last_listID))
-            print(last_orderid)
             cur.execute(f"Insert into {ordername}_{last_listID}(ordername,employeeID,listID) Values (%s,%s,%s)",(ordername, employeeID, last_listID))
             cur.execute("Insert into pos(listid,employeeID,ordername) Values (%s,%s,%s)",(last_listID,employeeID,ordername))
             cur.execute("Select Last_Insert_ID()")
@@ -115,7 +112,7 @@ def create_order():
     
 @auth.route('/menu')
 def fetch_menu_items():
-    
+    cur.execute ("if exists select * from ")
     cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'apps' ", )
     apps = cur.fetchall()
     print(apps)

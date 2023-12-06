@@ -10,7 +10,7 @@
 <!-- Display list of orders -->
 <ul>
     {% for h in history %}
-        <li>HistoryID {{ h[0] }}: OrderID{{ h[1] }}: EmployeeID {{ h[2] }}: Ordername {{ h[3] }}: Order Total {{ h[4] }} Paid {{ h[5] }}
+        <li>HistoryID {{ h[0] }} - OrderID{{ h[1] }} - EmployeeID {{ h[2] }} - Ordername {{ h[3] }} - Order Total {{ h[4] }} - Paid {{ h[5] }}
     {% endfor %}
 </ul>
 {% endblock %}
