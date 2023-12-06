@@ -237,5 +237,15 @@ def delete_order():
         menu_db.rollback()
         flash(f'Error deleting order: {e}', category='error')
         return redirect(url_for('auth.create_order'))
+@auth.route('/access_order', methods=['GET','POST'])
+def access_order():
+    try:
+        orderid = request.form.get('order_id')
+        ordername = request.form.get('order_name')
+        fetch_menu_items(orderid,ordername)
+
+    
+    except Exception as e:
+        flash(f'Error accessing order: {e}', category='error')
         
 
