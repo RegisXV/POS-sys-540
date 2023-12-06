@@ -83,13 +83,11 @@ def create_order():
             cur.execute("INSERT INTO orderlist (ordername, employeeID) VALUES (%s, %s)", (ordername, employeeID))
             last_listID = cur.lastrowid
             print(last_listID)
-            
             cur.execute(f"CREATE TABLE IF NOT EXISTS {ordername}_{last_listID} (orderID int auto_increment primary key, posid int,\
                 employeeID int,listID int, ordername VARCHAR(255),ItemID int,Item_name VARCHAR(255),cost double,quantity int,\
                     foreign key (employeeID) References Employees(employeeID),\
                         foreign key (listID) References orderlist(listid),\
                             foreign key (ItemID) References Itemlist(itemID))")
-            
             cur.execute("Select Last_Insert_ID()")
             last_orderid = cur.fetchone()[0]
             print(last_orderid)
