@@ -1,36 +1,5 @@
 create DATABASE POS;
 USE POS;
-drop database POS;
-
-Create Table pos (
-posid int primary key auto_increment not null,
-orderid int,
-employeeID int not null,
-ordername varchar(100),
-totalcost double);
-select*from pos;
-
-Create Table orderlist (
-listid int primary key auto_increment not null,
-orderid int,
-ordername varchar(100) Not NULL,
-posid int,
-employeeID int Not NUll,
-Foreign Key (employeeID) References Employees(employeeID),
-Foreign Key (posid) References pos (posid));
-
-
-
-select * from Jack_2;
-
-Create Table orderhistory(
-historyid int primary key auto_increment Not NUll,
-posID int not null,
-employeeID int not null,
-ordername varchar(100) Not NUll,
-total double);
-
-
 
 CREATE TABLE Itemlist  (
 itemID int primary key auto_increment NOT NULL,
@@ -77,39 +46,36 @@ pin VARCHAR (50) NOT NULL
  insert into Employees(is_manager,firstname,lastname,PIN)
  Values (1,'Joe','Bob','0001');
  select * from Employees;
-
  
- CREATE TABLE Employee_Salary (
-firstname varchar(60),
-lastname varchar(60), 
-baseSalary int NOT NULL,
-tips int NOT NULL,
-total_pay int
- );
- 
-select * from J_7;
-select*from Itsalive_10;
- 
- start transaction;
- delete from jack_2 where listID=2;
- select*from jack_2;
- select*from orderlist;
- delete from orderlist where posid=1;
- select * from pos;
- delete from pos where posid=1;
- select*from pos;
- select* from orderlist;
- select*from orderhistory;
- rollback;
- drop table jack_2;
- 
-select*from Letsgo_11;
+Create Table pos (
+posid int primary key auto_increment not null,
+listid int,
+employeeID int not null,
+ordername varchar(100),
+totalcost double not null default 0);
+select*from pos;
 
-select*from Ara_16;
+Create Table orderlist (
+listid int primary key auto_increment not null,
+orderid int,
+ordername varchar(100) Not NULL,
+posid int,
+employeeID int Not NUll,
+Foreign Key (employeeID) References Employees(employeeID),
+Foreign Key (posid) References pos (posid));
 
 
 
--- Triggers 
+Create Table orderhistory(
+historyid int primary key auto_increment Not NUll,
+posID int not null,
+employeeID int not null,
+ordername varchar(100) Not NUll,
+total double not null default 0,
+ispaid boolean default 0);
+
+
+-- Triggers this works with the current delete procedure 
 DELIMITER //
 CREATE TRIGGER trg_delete_pos_and_insert_orderhistory
 BEFORE DELETE ON pos
@@ -121,6 +87,32 @@ END;
 //
 DELIMITER ;
 
+ -- test for delete procedure
+ start transaction;
+ select*from Josh_1;
+ delete from Josh_1 where listID=1;
+ select*from Josh_1;
+ select*from orderlist;
+ delete from orderlist where posid=1;
+ select * from pos;
+ delete from pos where posid=1;
+ select*from pos;
+ select* from orderlist;
+ select*from orderhistory;
+ rollback;
+ drop table Josh_1;
+ 
+
+
 ALTER USER 'root'@'localhost' IDENTIFIED WITH 'mysql_native_password' BY 'root';
+
+Drop database pos;
+
+select*from John_1;
+select*from pos;
+select*from orderlist;
+select*from orderhistory;
+
+drop table orderhistory;
 
 

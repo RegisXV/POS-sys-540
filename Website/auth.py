@@ -45,6 +45,7 @@ def login():
                         
         except Exception as e:
             flash(f'Error fetching orders: {e}', category='error')
+
     return render_template("login.html", boolean=True)
 
 @auth.route('/portal', methods=['GET','POST'])
@@ -70,7 +71,6 @@ def create_order():
             employeeID = get_current_employee_id()
             cur.execute("SELECT listid, ordername FROM orderlist WHERE employeeID = %s", (employeeID,))
             orders = cur.fetchall()
-            print(orders)
             return render_template('orders.html', orders=orders)
         except Exception as e:
             flash(f'Error fetching orders: {e}', category='error')
@@ -94,7 +94,7 @@ def create_order():
             cur.execute("Update orderlist set orderid=%s where listid=%s",(last_orderid,last_listID))
             print(last_orderid)
             cur.execute(f"Insert into {ordername}_{last_listID}(ordername,employeeID,listID) Values (%s,%s,%s)",(ordername, employeeID, last_listID))
-            cur.execute("Insert into pos(orderid,employeeID,ordername) Values (%s,%s,%s)",(last_orderid,employeeID,ordername))
+            cur.execute("Insert into pos(listid,employeeID,ordername) Values (%s,%s,%s)",(last_listID,employeeID,ordername))
             cur.execute("Select Last_Insert_ID()")
             last_posid = cur.fetchone()[0]
             cur.execute("Update orderlist set posid=%s where listid=%s",(last_posid,last_listID))
@@ -111,18 +111,7 @@ def create_order():
     cur.close()
     return render_template('orders.html', orders=[])
        
-@auth.route('/order/Delete', methods=['POST'])
-def delete_order_list():
-    try:
-        order_id = request.form.get('order_id')
-        
-        cur.execute("Delete pos where orderid=%s",(order_id))
 
-        flash('Order Deleted Successfully!', category='success')
-    except Exception as e:
-        flash(f'Error deleting order: {e}', category='error')
-
-    return redirect(url_for('auth.create_order'))
     
 @auth.route('/menu')
 def fetch_menu_items():
@@ -173,7 +162,6 @@ def addemp():
             flash(f'Error adding employee: {e}', category='error')
 
         cur.close
-        menu_db.close
     return render_template("AddEmp.html")
 
 def remove_employee(employee_id_to_remove):
@@ -223,4 +211,31 @@ def order_history():
     history = cur.fetchall()
 
     return render_template('orderhistory.html',history=history)
+
+@auth.route('/delete_order', methods=['POST'])
+def delete_order():
+    try:
+        order_id = request.form.get('order_id')
+        order_name = request.form.get('order_name')  
+
+        cur.execute("START TRANSACTION") #In case things go wrong
+
+        cur.execute(f"DELETE FROM {order_name}_{order_id} WHERE listID = %s", (order_id,))
+        cur.execute("DELETE FROM orderlist WHERE listid = %s", (order_id,))
+        cur.execute("DELETE FROM pos WHERE listid = %s", (order_id,))
+       
+
+        cur.execute(f"Drop Table {order_name}_{order_id}")
+
+        cur.execute("COMMIT")
+
+        
+        flash('Order deleted', category='success')
+        return redirect(url_for('auth.create_order'))
+
+    except Exception as e:
+        menu_db.rollback()
+        flash(f'Error deleting order: {e}', category='error')
+        return redirect(url_for('auth.create_order'))
+        
 

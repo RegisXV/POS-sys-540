@@ -13,8 +13,12 @@
         {% for order in orders %}
             <li>Order {{ loop.index }}: {{ order[1] }} 
                 <button onclick="accessOrder('{{ loop.index }}')">Access Order</button>
-                <input type="hidden" name="order_id" value="{{ order[0] }}">
-                <button type="submit">Delete Order</button>
+                <form method="post" action="/delete_order">
+                    <input type="hidden" name="order_id" value="{{ order[0] }}">
+                    <input type="hidden" name="order_name" value="{{ order[1] }}">
+                    <button type="submit">Delete Order</button>
+                    </form>
+            </li>
         {% endfor %}
     </ul>
 
