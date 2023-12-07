@@ -45,6 +45,7 @@ def login():
                         
         except Exception as e:
             flash(f'Error fetching orders: {e}', category='error')
+
     return render_template("login.html", boolean=True)
 
 @auth.route('/portal', methods=['GET','POST'])
@@ -70,7 +71,6 @@ def create_order():
             employeeID = get_current_employee_id()
             cur.execute("SELECT listid, ordername FROM orderlist WHERE employeeID = %s", (employeeID,))
             orders = cur.fetchall()
-            print(orders)
             return render_template('orders.html', orders=orders)
         except Exception as e:
             flash(f'Error fetching orders: {e}', category='error')
@@ -82,7 +82,6 @@ def create_order():
             orders = cur.fetchall()
             cur.execute("INSERT INTO orderlist (ordername, employeeID) VALUES (%s, %s)", (ordername, employeeID))
             last_listID = cur.lastrowid
-            print(last_listID)
             cur.execute(f"CREATE TABLE IF NOT EXISTS {ordername}_{last_listID} (orderID int auto_increment primary key, posid int,\
                 employeeID int,listID int, ordername VARCHAR(255),ItemID int,Item_name VARCHAR(255),cost double,quantity int,\
                     foreign key (employeeID) References Employees(employeeID),\
@@ -90,11 +89,9 @@ def create_order():
                             foreign key (ItemID) References Itemlist(itemID))")
             cur.execute("Select Last_Insert_ID()")
             last_orderid = cur.fetchone()[0]
-            print(last_orderid)
             cur.execute("Update orderlist set orderid=%s where listid=%s",(last_orderid,last_listID))
-            print(last_orderid)
             cur.execute(f"Insert into {ordername}_{last_listID}(ordername,employeeID,listID) Values (%s,%s,%s)",(ordername, employeeID, last_listID))
-            cur.execute("Insert into pos(orderid,employeeID,ordername) Values (%s,%s,%s)",(last_orderid,employeeID,ordername))
+            cur.execute("Insert into pos(listid,employeeID,ordername) Values (%s,%s,%s)",(last_listID,employeeID,ordername))
             cur.execute("Select Last_Insert_ID()")
             last_posid = cur.fetchone()[0]
             cur.execute("Update orderlist set posid=%s where listid=%s",(last_posid,last_listID))
@@ -111,37 +108,29 @@ def create_order():
     cur.close()
     return render_template('orders.html', orders=[])
        
-# DELETE ORDER LIST FUNCTION IS HERE AND REQUIRES GET & POST       
-@auth.route('/order/Delete', methods=['GET','POST'])
-def delete_order_list():
-    try:
-        order_id = request.form.get('order_id')
-        
-        cur.execute("Delete pos where orderid=%s",(order_id))
 
-        flash('Order Deleted Successfully!', category='success')
-    except Exception as e:
-        flash(f'Error deleting order: {e}', category='error')
-
-    return redirect(url_for('auth.create_order'))
     
 @auth.route('/menu')
-def fetch_menu_items():
+def fetch_menu_items(orderid,ordername):
+    try:
+        cur.execute (f"Select posid, employeeID, ordername, listID from {ordername}_{orderid} ")
+        details = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'apps' ", )
+        apps = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'entrees' ", )
+        entrees = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'sides' ", )
+        sides = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'drinks' ", )
+        drinks = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'desserts' ", )
+        desserts = cur.fetchall()
+        print(details,apps,entrees,sides,drinks,desserts)
+        return render_template('pos2.html', details=details, apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts)
+    except Exception as e:
     
-    cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'apps' ", )
-    apps = cur.fetchall()
-    print(apps)
-    cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'entrees' ", )
-    entrees = cur.fetchall()
-    print(entrees)
-    cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'sides' ", )
-    sides = cur.fetchall()
-    cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'drinks' ", )
-    drinks = cur.fetchall()
-    cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'desserts' ", )
-    desserts = cur.fetchall()
-    cur.close()
-    return render_template('pos2.html', apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts)
+        flash(f'Error fetching menu items: {e}', category='error')
+        return redirect(url_for('auth.create_order'))
     
 
 
@@ -174,7 +163,6 @@ def addemp():
             flash(f'Error adding employee: {e}', category='error')
 
         cur.close
-        menu_db.close
     return render_template("AddEmp.html")
 
 def remove_employee(employee_id_to_remove):
@@ -224,3 +212,68 @@ def order_history():
     history = cur.fetchall()
 
     return render_template('orderhistory.html',history=history)
+
+@auth.route('/delete_order', methods=['POST'])
+def delete_order():
+    try:
+        order_id = request.form.get('order_id')
+        order_name = request.form.get('order_name')  
+
+        cur.execute("START TRANSACTION") #In case things go wrong
+
+        cur.execute(f"DELETE FROM {order_name}_{order_id} WHERE listID = %s", (order_id,))
+        cur.execute("DELETE FROM orderlist WHERE listid = %s", (order_id,))
+        cur.execute("DELETE FROM pos WHERE listid = %s", (order_id,))
+       
+
+        cur.execute(f"Drop Table {order_name}_{order_id}")
+
+        cur.execute("COMMIT")
+
+        
+        flash('Order deleted', category='success')
+        return redirect(url_for('auth.create_order'))
+
+    except Exception as e:
+        menu_db.rollback()
+        flash(f'Error deleting order: {e}', category='error')
+        return redirect(url_for('auth.create_order'))
+
+
+@auth.route('/access_order', methods=['GET','POST'])
+def access_order():
+    try:
+        orderid = request.form.get('order_id')
+        ordername = request.form.get('order_name')
+        details, apps, entrees, sides, drinks, desserts = fetch_menu_items1(orderid, ordername)
+        print(details,apps,entrees,sides,drinks,desserts)
+        return render_template('pos2.html', details=details, apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts)
+        
+    except Exception as e:
+        flash(f'Error accessing order: {e}', category='error')
+        return redirect(url_for('auth.create_order'))
+    
+def fetch_menu_items1(orderid,ordername):
+    try:
+        cur.execute (f"Select posid, employeeID, ordername, listID from {ordername}_{orderid} ")
+        details = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'apps' ", )
+        apps = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'entrees' ", )
+        entrees = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'sides' ", )
+        sides = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'drinks' ", )
+        drinks = cur.fetchall()
+        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'desserts' ", )
+        desserts = cur.fetchall()
+        print(details,apps,entrees,sides,drinks,desserts)
+        return (details, apps, entrees, sides, drinks, desserts)
+    except Exception as e:
+    
+        flash(f'Error fetching menu items: {e}', category='error')
+        return redirect(url_for('auth.create_order'))
+
+
+        
+

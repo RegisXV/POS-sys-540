@@ -3,10 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu1</title>
+    <title>Menu</title>
 </head>
 <body>
-    <h1>Menu1</h1>
+    <h1>Menu</h1>
+    
+    <ul>
+        Pos Info 
+        <li>
+            
+        {% for detail in details %}
+            PosID - {{ detail[0] }} EmployeeID - {{ detail[1] }} OrderName # - {{ detail[2] }} {{ detail[3] }}
+        {% endfor %}
+        </li>
+    </ul>
 
     <!-- Display list of orders -->
     <ul>
@@ -29,7 +39,7 @@
     
     <ul>
         {% for side in sides %}
-            <li>Entrees {{ side[0] }}: {{ side[1] }} : {{ side[2] }}$
+            <li>Sides {{ side[0] }}: {{ side[1] }} : {{ side[2] }}$
                 <button onclick="accessOrder('{{ loop.index }}')">+</button>
                 <button onclick="deleteOrder('{{ loop.index }}', '{{ side[1] }}')">-</button>
             </li>
@@ -47,7 +57,7 @@
     
     <ul>
         {% for dessert in desserts %}
-            <li>Entrees {{ dessert[0] }}: {{ dessert[1] }} : {{ dessert[2] }}$
+            <li>Desserts {{ dessert[0] }}: {{ dessert[1] }} : {{ dessert[2] }}$
                 <button onclick="accessOrder('{{ loop.index }}')">+</button>
                 <button onclick="deleteOrder('{{ loop.index }}', '{{ dessert[1] }}')">-</button>
             </li>
