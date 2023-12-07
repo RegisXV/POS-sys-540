@@ -165,39 +165,37 @@ def addemp():
         cur.close
     return render_template("AddEmp.html")
 
-def remove_employee(employee_id_to_remove):
-    try:
-        # Check if the employee is a manager
-        cur.execute("SELECT is_manager FROM Employees WHERE employeeID = %s", (employee_id_to_remove,))
-        result = cur.fetchone()
-
-        if result:
-            is_manager = result[0]
-
-            if is_manager:
+def remove_employee(empid,manager):
+    try:    
+        if manager==1:
                 flash('Manager cannot be removed.', category='error')
-            else:
+        else:
                 # Delete the employee if not a manager
-                cur.execute("DELETE FROM Employees WHERE employeeID = %s", (employee_id_to_remove,))
+                cur.execute("DELETE FROM Employees WHERE employeeID = %s", (empid,))
                 menu_db.commit()
                 flash('Employee Removed!', category='success')
-        else:
-            flash('Employee not found.', category='error')
 
     except Exception as e:
         flash(f'Error removing employee: {e}', category='error')
 
 @auth.route('/remove_employee', methods=['GET', 'POST'])
 def remove_employee_route():
-    if request.method == 'POST':
-        employee_id_to_remove = int(request.form.get('remove_employee_id'))
-        remove_employee(employee_id_to_remove)
+    try:
+        cur.execute("SELECT * FROM employees")
+        employee_list = cur.fetchall()
+        
+        if request.method == 'POST':
+            empid = request.form.get("EmpID")
+            manager = int(request.form.get("isman"))
+            remove_employee(empid,manager)
+            return redirect(url_for('auth.remove_employee_route'))
 
-    # Fetch the updated employee list after removal
-    cur.execute("SELECT firstname,lastname,pin FROM employees")
-    employee_list = cur.fetchall()
+        # Fetch the updated employee list after removal
+        
 
-    return render_template('RemEmp.html', employee_list=employee_list)
+        return render_template('RemEmp.html', employee_list=employee_list)
+    except Exception as e:
+        flash(f'Error listing employees: {e}', category='error')
 
 @auth.route('/logout')
 def logout():
