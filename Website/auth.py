@@ -274,6 +274,14 @@ def fetch_menu_items1(orderid,ordername):
         flash(f'Error fetching menu items: {e}', category='error')
         return redirect(url_for('auth.create_order'))
 
+def Add_to_cart(orderid,ordername,cost,quantity):
 
-        
+        menuItems = fetch_menu_items1()
 
+        cur.execute("SELECT posid, employeeID, ordername, listID FROM order_table WHERE order_id = %s", (orderid,))
+        order_data = cur.fetchone()
+                    
+        cur.execute(
+            "INSERT INTO {ordername}_{orderid}(order_id, item_name, cost, quantity) VALUES (%s, %s, %s, %s)",
+            (orderid, ordername, cost, quantity)
+        )
