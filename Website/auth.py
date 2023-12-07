@@ -69,9 +69,18 @@ def create_order():
     if request.method == 'GET':
         try:
             employeeID = get_current_employee_id()
-            cur.execute("SELECT listid, ordername FROM orderlist WHERE employeeID = %s", (employeeID,))
-            orders = cur.fetchall()
-            return render_template('orders.html', orders=orders)
+            cur.execute("Select is_manager from employees where employeeID = %s", (employeeID,))
+            result = cur.fetchall()
+            if result:
+                isman = int(result[0][0])
+                if isman == 1:
+                    cur.execute("SELECT listid, ordername FROM orderlist")
+                    orders = cur.fetchall()
+                    return render_template('orders.html', orders=orders)
+                else:
+                    cur.execute("SELECT listid, ordername FROM orderlist WHERE employeeID = %s", (employeeID,))
+                    orders = cur.fetchall()
+                    return render_template('orders.html', orders=orders)
         except Exception as e:
             flash(f'Error fetching orders: {e}', category='error')
 
@@ -108,9 +117,7 @@ def create_order():
     cur.close()
     return render_template('orders.html', orders=[])
        
-
-    
-@auth.route('/menu')
+@auth.route('/menu') #Leave for possible changes later but this is not the actual fetch menu items
 def fetch_menu_items(orderid,ordername):
     try:
         cur.execute (f"Select posid, employeeID, ordername, listID from {ordername}_{orderid} ")
