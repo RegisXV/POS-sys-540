@@ -144,6 +144,7 @@ def menu():
     except Exception as e:
         flash(f'Error accessing menu: {e}', category='error')
         return redirect(url_for('auth.create_order'))
+    
 def fetch_menu_items1(orderid,ordername):
     try:
         cur.execute (f"Select posid, employeeID, ordername, listID from {ordername}_{orderid} ")
@@ -181,8 +182,17 @@ def add_to_cart(orderid, ordername, itemid, itemname, itemcost):
         flash(f'Error adding to cart: {e}', category='error')
         return redirect(url_for('auth.access_order'))
 
-
+def delete_from_cart(orderid, ordername, itemid, itemname, itemcost):
+    try:
+        cur.execute(f"SELECT posid, employeeID, ordername, listID FROM {ordername}_{orderid} WHERE orderID = 1")
     
+        print(Posinfo)
+        cur.execute(f"DELETE FROM {orderid} WHERE orderid = %s", (orderid,))
+        menu_db.commit()
+        print("Item deleted from cart successfully!")
+    except Exception as e:
+        menu_db.rollback() 
+        print(f"Error deleting item from cart: {e}")
 
 
 @auth.route('/Addemp', methods=['GET', 'POST']) #Add Employee 
@@ -310,6 +320,8 @@ def access_order():
     except Exception as e:
         flash(f'Error accessing order: {e}', category='error')
         return redirect(url_for('auth.create_order'))
+    
+# THE FETCH HAS BEEN MOVED TO 
     
 # def fetch_menu_items1(orderid,ordername):
 #     try:
