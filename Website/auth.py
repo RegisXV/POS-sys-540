@@ -311,15 +311,14 @@ def fetch_menu_items1(orderid,ordername):
         flash(f'Error fetching menu items: {e}', category='error')
         return redirect(url_for('auth.create_order'))
 
+def Add_to_cart(orderid,ordername,cost,quantity):
 
-def add_to_cart(orderid,ordername,itemid,itemname,itemcost):
-    cur.execute(f"Select posid, employeeID, ordername, listID from {ordername}_{orderid} where orderID=1")
-    Posinfo = cur.fetchall()
-    cur.execute(f"Insert  into {ordername}_{orderid} (ItemID,Item_name,cost,quantity) values (%s,%s,%s,1)",(itemid,itemname,itemcost) )
-    cur.execute("Select Last_Insert_ID")
-    Lastorderid=cur.fetchone[0]
-    cur.execute(f"UPDATE {ordername}_{orderid} SET posid = %s, employeeID = %s, ordername = %s, listID = %s WHERE orderID = %s",
-            (Posinfo['posid'], Posinfo['employeeID'], Posinfo['ordername'], Posinfo['listID'], Lastorderid))
-    return redirect(url_for('auth.access_order'))
-    
+        menuItems = fetch_menu_items1()
 
+        cur.execute("SELECT posid, employeeID, ordername, listID FROM order_table WHERE order_id = %s", (orderid,))
+        order_data = cur.fetchone()
+                    
+        cur.execute(
+            "INSERT INTO {ordername}_{orderid}(order_id, item_name, cost, quantity) VALUES (%s, %s, %s, %s)",
+            (orderid, ordername, cost, quantity)
+        )
