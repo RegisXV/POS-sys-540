@@ -4,26 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu</title>
+    <link rel="stylesheet" href="Pos.css">
 </head>
 <body>
-    <h1>Menu</h1>
     
-    <ul>
-        Pos Info 
-        <li>
-            
-        {% for detail in details %}
-            PosID - {{ detail[0] }} EmployeeID - {{ detail[1] }} OrderName # - {{ detail[2] }} {{ detail[3] }}
-        {% endfor %}
-        </li>
-    </ul>
+    <div class="container">
+        <div class="menu">
+         <h1>Menu</h1>   
+        
+         <ul>
+            Pos Info 
+            {% if details %}
+                <li>
+                    PosID - {{ details[0][0] }} | EmployeeID - {{ details[0][1] }} | OrderName # - {{ details[0][2] }} {{ details[0][3] }}
+                </li>
+            {% endif %}
+        </ul>
 
     <!-- Display list of orders -->
     <ul>
         {% for app in apps %}
-            <li>Appetizers {{ app[0] }}: {{ app[1] }} : {{ app[2] }}$
-                <button onclick="accessOrder('{{ loop.index }}')">+</button>
-                <button onclick="deleteOrder('{{ loop.index }}', '{{ app[1] }}')">-</button>
+            <li>Appetizers {{ app[0] }}: {{ app[1] }} : {{ app[2] }}$ <form method="post" action="{{ url_for('auth.menu') }}">
+                <input type="hidden" name="order_id" value="{{ current_order_id }}">
+                <input type="hidden" name="order_name" value="{{ current_order_name }}">
+                <input type="hidden" name="itemid" value="{{ app[0] }}">
+                <input type="hidden" name="itemname" value="{{ app[1] }}">
+                <input type="hidden" name="cost" value="{{ app[2] }}">
+                    <button type="submit">+ add to order</button>
+                    </form>
             </li>
         {% endfor %}
     </ul>
@@ -63,6 +71,14 @@
             </li>
         {% endfor %}
     </ul>
-
+    <div class="cart">
+        <h2>Shopping Cart</h2>
+        <ul>
+            {% for item in cart %}
+                <li>{{ item[0] }} - {{ item[1] }} - {{ item[2] }} - {{ item[3] }}$</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
 </body>
 </html>

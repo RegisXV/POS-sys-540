@@ -10,8 +10,12 @@
     <ul>
         {% for employee in employee_list %}
             <li>
-                {{ employee[0] }} {{ employee[1] }} (PIN: {{ employee[2] }})
-                <button type="submit" name="remove_employee_id" value="{{ employee[0] }}" class="btn btn-danger">Remove</button>
+                ID - {{ employee[0] }} | Manager 1/0 - {{ employee[1] }} | FirstName - {{ employee[2] }} | LastName - {{ employee[3] }} | (PIN: {{ employee[4] }})
+                <form method="post" action="{{ url_for('auth.remove_employee_route') }}">
+                    <input type="hidden" name="EmpID" value="{{ employee[0] }}">
+                    <input type="hidden" name="isman" value="{{ employee[1] }}">
+                    <button type="submit">Remove Employee</button>
+                    </form>
             </li>
         {% endfor %}
     </ul>

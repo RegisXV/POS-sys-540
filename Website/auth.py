@@ -69,9 +69,18 @@ def create_order():
     if request.method == 'GET':
         try:
             employeeID = get_current_employee_id()
-            cur.execute("SELECT listid, ordername FROM orderlist WHERE employeeID = %s", (employeeID,))
-            orders = cur.fetchall()
-            return render_template('orders.html', orders=orders)
+            cur.execute("Select is_manager from employees where employeeID = %s", (employeeID,))
+            result = cur.fetchall()
+            if result:
+                isman = int(result[0][0])
+                if isman == 1:
+                    cur.execute("SELECT listid, ordername FROM orderlist")
+                    orders = cur.fetchall()
+                    return render_template('orders.html', orders=orders)
+                else:
+                    cur.execute("SELECT listid, ordername FROM orderlist WHERE employeeID = %s", (employeeID,))
+                    orders = cur.fetchall()
+                    return render_template('orders.html', orders=orders)
         except Exception as e:
             flash(f'Error fetching orders: {e}', category='error')
 
@@ -108,10 +117,30 @@ def create_order():
     cur.close()
     return render_template('orders.html', orders=[])
        
+@auth.route('/menu', methods=['GET','POST'])
+def menu():
+    try:
+        orderid = session.get('orderid')
+        ordername = session.get('ordername')
+        if request.method == 'POST':
+            itemid = request.form.get('itemid')
+            itemname = request.form.get('itemname')
+            itemcost = request.form.get('cost')
+            add_to_cart(orderid, ordername, itemid, itemname, itemcost)
 
     
-@auth.route('/menu')
-def fetch_menu_items(orderid,ordername):
+        cur.execute(f"Select ItemID, Item_name, cost, quantity from {ordername}_{orderid} where orderID > 1")
+        cart = cur.fetchall()
+        details, apps, entrees, sides, drinks, desserts = fetch_menu_items1(orderid, ordername)
+
+        
+
+        return render_template('pos2.html', details=details, apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts, cart=cart)
+
+    except Exception as e:
+        flash(f'Error accessing menu: {e}', category='error')
+        return redirect(url_for('auth.create_order'))
+def fetch_menu_items1(orderid,ordername):
     try:
         cur.execute (f"Select posid, employeeID, ordername, listID from {ordername}_{orderid} ")
         details = cur.fetchall()
@@ -125,12 +154,30 @@ def fetch_menu_items(orderid,ordername):
         drinks = cur.fetchall()
         cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'desserts' ", )
         desserts = cur.fetchall()
-        print(details,apps,entrees,sides,drinks,desserts)
-        return render_template('pos2.html', details=details, apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts)
+        return (details, apps, entrees, sides, drinks, desserts)
     except Exception as e:
     
         flash(f'Error fetching menu items: {e}', category='error')
         return redirect(url_for('auth.create_order'))
+def add_to_cart(orderid, ordername, itemid, itemname, itemcost):
+    try:
+        print(itemid,itemname,itemcost)
+        print(f"Order ID: {orderid}, Order Name: {ordername}")
+        cur.execute(f"Select posid, employeeID, ordername, listID from {ordername}_{orderid} where orderID=1")
+        Posinfo = cur.fetchall()
+        print(Posinfo)
+        cur.execute(f"Insert into {ordername}_{orderid} (ItemID, Item_name, cost, quantity) values (%s, %s, %s, 1)", (itemid, itemname, itemcost))
+        cur.execute("Select LAST_INSERT_ID()")
+        Lastorderid = cur.fetchone()[0]
+        print(Lastorderid)
+        cur.execute(f"UPDATE {ordername}_{orderid} SET posid = %s, employeeID = %s, ordername = %s, listID = %s WHERE orderID = %s",
+                    (Posinfo[0][0], Posinfo[0][1], Posinfo[0][2], Posinfo[0][3], Lastorderid))
+        menu_db.commit()
+    except Exception as e:
+        flash(f'Error adding to cart: {e}', category='error')
+        return redirect(url_for('auth.access_order'))
+
+
     
 
 
@@ -165,39 +212,37 @@ def addemp():
         cur.close
     return render_template("AddEmp.html")
 
-def remove_employee(employee_id_to_remove):
-    try:
-        # Check if the employee is a manager
-        cur.execute("SELECT is_manager FROM Employees WHERE employeeID = %s", (employee_id_to_remove,))
-        result = cur.fetchone()
-
-        if result:
-            is_manager = result[0]
-
-            if is_manager:
+def remove_employee(empid,manager):
+    try:    
+        if manager==1:
                 flash('Manager cannot be removed.', category='error')
-            else:
+        else:
                 # Delete the employee if not a manager
-                cur.execute("DELETE FROM Employees WHERE employeeID = %s", (employee_id_to_remove,))
+                cur.execute("DELETE FROM Employees WHERE employeeID = %s", (empid,))
                 menu_db.commit()
                 flash('Employee Removed!', category='success')
-        else:
-            flash('Employee not found.', category='error')
 
     except Exception as e:
         flash(f'Error removing employee: {e}', category='error')
 
 @auth.route('/remove_employee', methods=['GET', 'POST'])
 def remove_employee_route():
-    if request.method == 'POST':
-        employee_id_to_remove = int(request.form.get('remove_employee_id'))
-        remove_employee(employee_id_to_remove)
+    try:
+        cur.execute("SELECT * FROM employees")
+        employee_list = cur.fetchall()
+        
+        if request.method == 'POST':
+            empid = request.form.get("EmpID")
+            manager = int(request.form.get("isman"))
+            remove_employee(empid,manager)
+            return redirect(url_for('auth.remove_employee_route'))
 
-    # Fetch the updated employee list after removal
-    cur.execute("SELECT firstname,lastname,pin FROM employees")
-    employee_list = cur.fetchall()
+        # Fetch the updated employee list after removal
+        
 
-    return render_template('RemEmp.html', employee_list=employee_list)
+        return render_template('RemEmp.html', employee_list=employee_list)
+    except Exception as e:
+        flash(f'Error listing employees: {e}', category='error')
 
 @auth.route('/logout')
 def logout():
@@ -246,42 +291,56 @@ def access_order():
         orderid = request.form.get('order_id')
         ordername = request.form.get('order_name')
         details, apps, entrees, sides, drinks, desserts = fetch_menu_items1(orderid, ordername)
-        print(details,apps,entrees,sides,drinks,desserts)
-        return render_template('pos2.html', details=details, apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts)
+        print(orderid,ordername)
+
+        if request.method == 'POST':
+            session['orderid'] = orderid
+            session['ordername'] = ordername
+            return render_template('pos2.html', details=details, apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts)
         
     except Exception as e:
         flash(f'Error accessing order: {e}', category='error')
         return redirect(url_for('auth.create_order'))
     
-def fetch_menu_items1(orderid,ordername):
-    try:
-        cur.execute (f"Select posid, employeeID, ordername, listID from {ordername}_{orderid} ")
-        details = cur.fetchall()
-        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'apps' ", )
-        apps = cur.fetchall()
-        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'entrees' ", )
-        entrees = cur.fetchall()
-        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'sides' ", )
-        sides = cur.fetchall()
-        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'drinks' ", )
-        drinks = cur.fetchall()
-        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'desserts' ", )
-        desserts = cur.fetchall()
-        print(details,apps,entrees,sides,drinks,desserts)
-        return (details, apps, entrees, sides, drinks, desserts)
-    except Exception as e:
+# THE FETCH HAS BEEN MOVED TO 
     
-        flash(f'Error fetching menu items: {e}', category='error')
-        return redirect(url_for('auth.create_order'))
+# def fetch_menu_items1(orderid,ordername):
+#     try:
+#         cur.execute (f"Select posid, employeeID, ordername, listID from {ordername}_{orderid} ")
+#         details = cur.fetchall()
+#         cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'apps' ", )
+#         apps = cur.fetchall()
+#         cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'entrees' ", )
+#         entrees = cur.fetchall()
+#         cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'sides' ", )
+#         sides = cur.fetchall()
+#         cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'drinks' ", )
+#         drinks = cur.fetchall()
+#         cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'desserts' ", )
+#         desserts = cur.fetchall()
+#         return (details, apps, entrees, sides, drinks, desserts)
+#     except Exception as e:
+    
+#         flash(f'Error fetching menu items: {e}', category='error')
+#         return redirect(url_for('auth.create_order'))
 
-def Add_to_cart(orderid,ordername,cost,quantity):
 
-        menuItems = fetch_menu_items1()
+# def add_to_cart(orderid, ordername, itemid, itemname, itemcost):
+#     try:
+#         print(itemid,itemname,itemcost)
+#         print(f"Order ID: {orderid}, Order Name: {ordername}")
+#         cur.execute(f"Select posid, employeeID, ordername, listID from {ordername}_{orderid} where orderID=1")
+#         Posinfo = cur.fetchall()
+#         print(Posinfo)
+#         cur.execute(f"Insert into {ordername}_{orderid} (ItemID, Item_name, cost, quantity) values (%s, %s, %s, 1)", (itemid, itemname, itemcost))
+#         cur.execute("Select LAST_INSERT_ID()")
+#         Lastorderid = cur.fetchone()[0]
+#         print(Lastorderid)
+#         cur.execute(f"UPDATE {ordername}_{orderid} SET posid = %s, employeeID = %s, ordername = %s, listID = %s WHERE orderID = %s",
+#                     (Posinfo[0][0], Posinfo[0][1], Posinfo[0][2], Posinfo[0][3], Lastorderid))
+#         menu_db.commit()
+#     except Exception as e:
+#         flash(f'Error adding to cart: {e}', category='error')
+#         return redirect(url_for('auth.access_order'))
+    
 
-        cur.execute("SELECT posid, employeeID, ordername, listID FROM order_table WHERE order_id = %s", (orderid,))
-        order_data = cur.fetchone()
-                    
-        cur.execute(
-            "INSERT INTO {ordername}_{orderid}(order_id, item_name, cost, quantity) VALUES (%s, %s, %s, %s)",
-            (orderid, ordername, cost, quantity)
-        )
