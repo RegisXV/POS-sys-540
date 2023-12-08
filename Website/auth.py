@@ -66,6 +66,8 @@ def portal():
 @auth.route('/order', methods=['GET', 'POST'])
 def create_order():
     # Fetch the list of orders for the current employee
+    orderid = session.pop('orderid', None)
+    ordername = session.pop('ordername', None)
     if request.method == 'GET':
         try:
             employeeID = get_current_employee_id()
@@ -131,11 +133,13 @@ def menu():
     
         cur.execute(f"Select ItemID, Item_name, cost, quantity from {ordername}_{orderid} where orderID > 1")
         cart = cur.fetchall()
+        cur.execute(f"Select sum(cost) from {ordername}_{orderid} where orderID > 1")
+        total = cur.fetchone()[0]
+        if total==None:
+            total=0
         details, apps, entrees, sides, drinks, desserts = fetch_menu_items1(orderid, ordername)
 
-        
-
-        return render_template('pos2.html', details=details, apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts, cart=cart)
+        return render_template('pos2.html', details=details, apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts, cart=cart, total=total)
 
     except Exception as e:
         flash(f'Error accessing menu: {e}', category='error')
@@ -296,7 +300,13 @@ def access_order():
         if request.method == 'POST':
             session['orderid'] = orderid
             session['ordername'] = ordername
-            return render_template('pos2.html', details=details, apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts)
+            cur.execute(f"Select ItemID, Item_name, cost, quantity from {ordername}_{orderid} where orderID > 1")
+            cart = cur.fetchall()
+            cur.execute(f"Select sum(cost) from {ordername}_{orderid} where orderID > 1")
+            total = cur.fetchone()[0]
+            if total==None:
+                total=0
+            return render_template('pos2.html', details=details, apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts, cart=cart, total=total)
         
     except Exception as e:
         flash(f'Error accessing order: {e}', category='error')
