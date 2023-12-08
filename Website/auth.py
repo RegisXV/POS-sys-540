@@ -113,6 +113,13 @@ def create_order():
 @auth.route('/menu')
 def fetch_menu_items():
     cur.execute ("if exists select * from ")
+
+    cur.execute("SELECT DISTINCT category FROM itemlist")
+
+    itemandcat = {}
+
+    category_list = cur.fetchall()
+
     cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'apps' ", )
     apps = cur.fetchall()
     print(apps)

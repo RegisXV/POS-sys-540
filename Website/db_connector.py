@@ -10,3 +10,14 @@ menu_db = mysql.connector.connect(
 )
 
 mycursor = menu_db.cursor()
+
+emptydict: {}
+
+mycursor.execute("CALL itemSelection(@ItemNameItemCat);")
+mycursor.execute("SELECT @ItemNameItemCat;")
+
+for cur in mycursor:
+  print(cur)
+
+
+

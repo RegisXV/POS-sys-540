@@ -7,6 +7,8 @@ itemname varchar(100) NOT NULL,
 category varchar(255) not Null,
 cost double NOT NULL);
 
+SELECT category FROM Itemlist;
+
 
 Insert into Itemlist(itemname,category,cost) 
 Values ("Sonic's chilli cheese dogs",'entrees',7.99),
@@ -34,6 +36,49 @@ Values ("Sonic's chilli cheese dogs",'entrees',7.99),
 ('Big ole Twinky','desserts',2.00),
 ('One scoop of icecream','desserts',1.50),
 ('How about two scoops of icecream','desserts',3.00);
+
+DROP PROCEDURE itemSelection;
+delimiter $$
+CREATE PROCEDURE itemSelection(
+        INOUT KeyVals text
+		)
+BEGIN
+		DECLARE done BOOL DEFAULT false;
+        DECLARE ItemCat varchar(100);
+        DECLARE  cur CURSOR FOR SELECT concat("'", itemname, "'",":"," '",category,"'") FROM itemlist;
+        
+        DECLARE CONTINUE HANDLER 
+        FOR NOT FOUND SET done = true;
+        
+        OPEN cur;
+        
+        SET keyvals = '';
+        
+    
+        
+        FETCH cur INTO ItemCat;
+        IF done = true THEN
+			LEAVE FetchItems;
+		END IF;
+		
+        SET keyvals = CONCAT(ItemCat, ", ", keyvals);
+        
+        END LOOP;
+        CLOSE cur;
+        
+        END $$
+        DELIMITER ;
+        
+        
+CALL itemSelection(@ItemNameItemCat);
+SELECT @ItemNameItemCat;
+
+        
+        
+        
+
+
+
 
 select * from Itemlist;
 CREATE TABLE Employees (
