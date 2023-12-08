@@ -98,10 +98,18 @@
                 <li>#{{ item[0] }} - {{ item[1] }} - {{ item[2] }}$ - Quantity - {{ item[3] }}</li>
             {% endfor %}
         </ul>
-        <div class="total">
+        <form action="/submit_order" method="post">
+            <!-- Other form elements -->
+        
+
             <div class="total">
                 <strong>Total:</strong> {{ total }}$
             </div>
+            <input type="hidden" id="total" name="total" value="{{ total }}">
+            <label for="amount">Enter Payment:</label>
+            <input type="text" id="amount" name="amount" placeholder="Checkout">
+            <button type="submit">Submit Order</button>
+        </form>
     </div>
 </div>
 </body>
