@@ -247,12 +247,20 @@ def delete_order():
 
 @auth.route('/access_order', methods=['GET','POST'])
 def access_order():
-    try:
+    try:    
+        if request.method == 'POST':
+            itemid = request.form.get('itemid')
+            itemname=request.form.get('itemname')
+            itemcost=request.form.get('cost')
+            add_to_cart(orderid,ordername,itemid,itemname,itemcost)
+            print(orderid,ordername,itemid,itemname,itemcost) 
         orderid = request.form.get('order_id')
         ordername = request.form.get('order_name')
         details, apps, entrees, sides, drinks, desserts = fetch_menu_items1(orderid, ordername)
-        print(details,apps,entrees,sides,drinks,desserts)
         return render_template('pos2.html', details=details, apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts)
+        
+       
+    
         
     except Exception as e:
         flash(f'Error accessing order: {e}', category='error')
@@ -272,7 +280,6 @@ def fetch_menu_items1(orderid,ordername):
         drinks = cur.fetchall()
         cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'desserts' ", )
         desserts = cur.fetchall()
-        print(details,apps,entrees,sides,drinks,desserts)
         return (details, apps, entrees, sides, drinks, desserts)
     except Exception as e:
     
@@ -280,5 +287,14 @@ def fetch_menu_items1(orderid,ordername):
         return redirect(url_for('auth.create_order'))
 
 
-        
+def add_to_cart(orderid,ordername,itemid,itemname,itemcost):
+    cur.execute(f"Select posid, employeeID, ordername, listID from {ordername}_{orderid} where orderID=1")
+    Posinfo = cur.fetchall()
+    cur.execute(f"Insert  into {ordername}_{orderid} (ItemID,Item_name,cost,quantity) values (%s,%s,%s,1)",(itemid,itemname,itemcost) )
+    cur.execute("Select Last_Insert_ID")
+    Lastorderid=cur.fetchone[0]
+    cur.execute(f"UPDATE {ordername}_{orderid} SET posid = %s, employeeID = %s, ordername = %s, listID = %s WHERE orderID = %s",
+            (Posinfo['posid'], Posinfo['employeeID'], Posinfo['ordername'], Posinfo['listID'], Lastorderid))
+    return redirect(url_for('auth.access_order'))
+    
 

@@ -21,9 +21,12 @@
     <!-- Display list of orders -->
     <ul>
         {% for app in apps %}
-            <li>Appetizers {{ app[0] }}: {{ app[1] }} : {{ app[2] }}$
-                <button onclick="accessOrder('{{ loop.index }}')">+</button>
-                <button onclick="deleteOrder('{{ loop.index }}', '{{ app[1] }}')">-</button>
+            <li>Appetizers {{ app[0] }}: {{ app[1] }} : {{ app[2] }}$ <form method="post" action="{{ url_for('auth.access_order') }}">
+                    <input type="hidden" name="itemid" value="{{ app[0] }}">
+                    <input type="hidden" name="itemname" value="{{ app[1] }}">
+                    <input type="hidden" name="cost" value="{{ app[2] }}">
+                    <button type="submit">+ add to order</button>
+                    </form>
             </li>
         {% endfor %}
     </ul>
