@@ -133,7 +133,7 @@ def menu():
     
         cur.execute(f"Select orderID, ItemID, Item_name, cost, quantity from {ordername}_{orderid} where orderID > 1") 
         cart = cur.fetchall()
-        cur.execute(f"Select sum(cost) from {ordername}_{orderid} where orderID > 1")
+        cur.execute(f"Select sum(cost) AS total_formatted from {ordername}_{orderid} where orderID > 1")
         total = cur.fetchone()[0]
         if total==None:
             total=0
@@ -185,10 +185,8 @@ def Remove_from_cart():
     try:
         order_id = session.get('orderid')
         order_name = session.get('ordername')
-        print (order_id,order_name)
         if request.method =='POST':
             orderitemid = request.form['itemid']
-            print (orderitemid)
             cur.execute('Start Transaction')
             cur.execute(f'Delete from {order_name}_{order_id} where orderID=%s',(orderitemid,))
             cur.execute('COMMIT')
@@ -227,11 +225,15 @@ def checkout():
                 
                 flash('Checkout Successful!', category='success')
                 return redirect(url_for('auth.create_order'))
+            else:
+                flash('Incorrect Amount', category='error')
+                return redirect(url_for('auth.menu'))
                 
                 
     except Exception as e:
         menu_db.rollback()
         flash(f'Error Paying for order: {e}', category='error')
+        return redirect(url_for('auth.menu'))
     
 
     
