@@ -11,7 +11,7 @@
     <div class="container">
         <div class="menu">
          <h1>Menu</h1>   
-        
+         <button onclick=location.href="/order">Access POS</button>
          <ul>
             Pos Info 
             {% if details %}
@@ -38,36 +38,56 @@
     
     <ul>
         {% for entree in entrees %}
-            <li>Entrees {{ entree[0] }}: {{ entree[1] }} : {{ entree[2] }}$
-                <button onclick="accessOrder('{{ loop.index }}')">+</button>
-                <button onclick="deleteOrder('{{ loop.index }}', '{{ entree[1] }}')">-</button>
+            <li>Entrees {{ entree[0] }}: {{ entree[1] }} : {{ entree[2] }}$ <form method="post" action="{{ url_for('auth.menu') }}">
+                <input type="hidden" name="order_id" value="{{ current_order_id }}">
+                <input type="hidden" name="order_name" value="{{ current_order_name }}">
+                <input type="hidden" name="itemid" value="{{ entree[0] }}">
+                <input type="hidden" name="itemname" value="{{ entree[1] }}">
+                <input type="hidden" name="cost" value="{{ entree[2] }}">
+                    <button type="submit">+ add to order</button>
+                    </form>
             </li>
         {% endfor %}
     </ul>
     
     <ul>
         {% for side in sides %}
-            <li>Sides {{ side[0] }}: {{ side[1] }} : {{ side[2] }}$
-                <button onclick="accessOrder('{{ loop.index }}')">+</button>
-                <button onclick="deleteOrder('{{ loop.index }}', '{{ side[1] }}')">-</button>
+            <li>Sides {{ side[0] }}: {{ side[1] }} : {{ side[2] }}$ <form method="post" action="{{ url_for('auth.menu') }}">
+                <input type="hidden" name="order_id" value="{{ current_order_id }}">
+                <input type="hidden" name="order_name" value="{{ current_order_name }}">
+                <input type="hidden" name="itemid" value="{{ side[0] }}">
+                <input type="hidden" name="itemname" value="{{ side[1] }}">
+                <input type="hidden" name="cost" value="{{ side[2] }}">
+                    <button type="submit">+ add to order</button>
+                    </form>
             </li>
         {% endfor %}
     </ul>
     
     <ul>
         {% for drink in drinks %}
-            <li>Drinks {{ drink[0] }}: {{ drink[1] }} : {{ drink[2] }}$
-                <button onclick="accessOrder('{{ loop.index }}')">+</button>
-                <button onclick="deleteOrder('{{ loop.index }}', '{{ drink[1] }}')">-</button>
+            <li>Drinks {{ drink[0] }}: {{ drink[1] }} : {{ drink[2] }}$ <form method="post" action="{{ url_for('auth.menu') }}">
+                <input type="hidden" name="order_id" value="{{ current_order_id }}">
+                <input type="hidden" name="order_name" value="{{ current_order_name }}">
+                <input type="hidden" name="itemid" value="{{ drink[0] }}">
+                <input type="hidden" name="itemname" value="{{ drink[1] }}">
+                <input type="hidden" name="cost" value="{{ drink[2] }}">
+                    <button type="submit">+ add to order</button>
+                    </form>
             </li>
         {% endfor %}
     </ul>
     
     <ul>
         {% for dessert in desserts %}
-            <li>Desserts {{ dessert[0] }}: {{ dessert[1] }} : {{ dessert[2] }}$
-                <button onclick="accessOrder('{{ loop.index }}')">+</button>
-                <button onclick="deleteOrder('{{ loop.index }}', '{{ dessert[1] }}')">-</button>
+            <li>Desserts {{ dessert[0] }}: {{ dessert[1] }} : {{ dessert[2] }}$ <form method="post" action="{{ url_for('auth.menu') }}">
+                <input type="hidden" name="order_id" value="{{ current_order_id }}">
+                <input type="hidden" name="order_name" value="{{ current_order_name }}">
+                <input type="hidden" name="itemid" value="{{ dessert[0] }}">
+                <input type="hidden" name="itemname" value="{{ dessert[1] }}">
+                <input type="hidden" name="cost" value="{{ dessert[2] }}">
+                    <button type="submit">+ add to order</button>
+                    </form>
             </li>
         {% endfor %}
     </ul>
@@ -83,6 +103,18 @@
                 </li>
             {% endfor %}
         </ul>
+        <form action="/submit_order" method="post">
+            <!-- Other form elements -->
+        
+
+            <div class="total">
+                <strong>Total:</strong> {{ total }}$
+            </div>
+            <input type="hidden" id="total" name="total" value="{{ total }}">
+            <label for="amount">Enter Payment:</label>
+            <input type="text" id="amount" name="amount" placeholder="Checkout">
+            <button type="submit">Submit Order</button>
+        </form>
     </div>
 </div>
 </body>

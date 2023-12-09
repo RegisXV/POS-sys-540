@@ -66,6 +66,8 @@ def portal():
 @auth.route('/order', methods=['GET', 'POST'])
 def create_order():
     # Fetch the list of orders for the current employee
+    orderid = session.pop('orderid', None)
+    ordername = session.pop('ordername', None)
     if request.method == 'GET':
         try:
             employeeID = get_current_employee_id()
@@ -132,11 +134,13 @@ def menu():
     
         cur.execute(f"Select orderID, ItemID, Item_name, cost, quantity from {ordername}_{orderid} where orderID > 1")
         cart = cur.fetchall()
+        cur.execute(f"Select sum(cost) from {ordername}_{orderid} where orderID > 1")
+        total = cur.fetchone()[0]
+        if total==None:
+            total=0
         details, apps, entrees, sides, drinks, desserts = fetch_menu_items1(orderid, ordername)
 
-        
-
-        return render_template('pos2.html', details=details, apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts, cart=cart)
+        return render_template('pos2.html', details=details, apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts, cart=cart, total=total)
 
     except Exception as e:
         flash(f'Error accessing menu: {e}', category='error')
@@ -178,7 +182,41 @@ def add_to_cart(orderid, ordername, itemid, itemname, itemcost):
     except Exception as e:
         flash(f'Error adding to cart: {e}', category='error')
         return redirect(url_for('auth.access_order'))
+@auth.route('/submit_order', methods=['GET','POST'])
+def checkout():
+    try:
+        order_id = session.get('orderid')
+        order_name = session.get('ordername')
+        if request.method=='POST':
+            Payment = request.form['amount']
+            Total = request.form['total']
+            if Payment==Total:
+                cur.execute("START TRANSACTION") #In case things go wrong
+                
+                cur.execute(f"Select posid from pos where listid = {order_id}")
+                curpos=cur.fetchone()[0]
 
+                cur.execute(f"DELETE FROM {order_name}_{order_id} WHERE listID = %s", (order_id,))
+                cur.execute("DELETE FROM orderlist WHERE listid = %s", (order_id,))
+                cur.execute("DELETE FROM pos WHERE listid = %s", (order_id,))
+            
+
+                cur.execute(f"Drop Table {order_name}_{order_id}")
+                
+                cur.execute("Update orderhistory set ispaid = 1 where posid=%s",(curpos,))
+                cur.execute("Update orderhistory set total =%s where posid=%s",(Total,curpos,))
+
+                cur.execute("COMMIT")
+
+                
+                flash('Checkout Successful!', category='success')
+                return redirect(url_for('auth.create_order'))
+                
+                
+    except Exception as e:
+        menu_db.rollback()
+        flash(f'Error Paying for order: {e}', category='error')
+    
 @auth.route('/DeleteCart',methods=['GET','POST'])
 def delete_from_cart(orderid, ordername, itemid, itemname, itemcost):
     try:
@@ -309,51 +347,17 @@ def access_order():
         if request.method == 'POST':
             session['orderid'] = orderid
             session['ordername'] = ordername
-            return render_template('pos2.html', details=details, apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts)
+            cur.execute(f"Select ItemID, Item_name, cost, quantity from {ordername}_{orderid} where orderID > 1")
+            cart = cur.fetchall()
+            cur.execute(f"Select sum(cost) from {ordername}_{orderid} where orderID > 1")
+            total = cur.fetchone()[0]
+            if total==None:
+                total=0
+            return render_template('pos2.html', details=details, apps=apps, entrees=entrees, sides=sides, drinks=drinks, desserts=desserts, cart=cart, total=total)
         
     except Exception as e:
         flash(f'Error accessing order: {e}', category='error')
         return redirect(url_for('auth.create_order'))
     
-# THE FETCH HAS BEEN MOVED TO 
-    
-# def fetch_menu_items1(orderid,ordername):
-#     try:
-#         cur.execute (f"Select posid, employeeID, ordername, listID from {ordername}_{orderid} ")
-#         details = cur.fetchall()
-#         cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'apps' ", )
-#         apps = cur.fetchall()
-#         cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'entrees' ", )
-#         entrees = cur.fetchall()
-#         cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'sides' ", )
-#         sides = cur.fetchall()
-#         cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'drinks' ", )
-#         drinks = cur.fetchall()
-#         cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'desserts' ", )
-#         desserts = cur.fetchall()
-#         return (details, apps, entrees, sides, drinks, desserts)
-#     except Exception as e:
-    
-#         flash(f'Error fetching menu items: {e}', category='error')
-#         return redirect(url_for('auth.create_order'))
-
-
-# def add_to_cart(orderid, ordername, itemid, itemname, itemcost):
-#     try:
-#         print(itemid,itemname,itemcost)
-#         print(f"Order ID: {orderid}, Order Name: {ordername}")
-#         cur.execute(f"Select posid, employeeID, ordername, listID from {ordername}_{orderid} where orderID=1")
-#         Posinfo = cur.fetchall()
-#         print(Posinfo)
-#         cur.execute(f"Insert into {ordername}_{orderid} (ItemID, Item_name, cost, quantity) values (%s, %s, %s, 1)", (itemid, itemname, itemcost))
-#         cur.execute("Select LAST_INSERT_ID()")
-#         Lastorderid = cur.fetchone()[0]
-#         print(Lastorderid)
-#         cur.execute(f"UPDATE {ordername}_{orderid} SET posid = %s, employeeID = %s, ordername = %s, listID = %s WHERE orderID = %s",
-#                     (Posinfo[0][0], Posinfo[0][1], Posinfo[0][2], Posinfo[0][3], Lastorderid))
-#         menu_db.commit()
-#     except Exception as e:
-#         flash(f'Error adding to cart: {e}', category='error')
-#         return redirect(url_for('auth.access_order'))
     
 
