@@ -75,8 +75,12 @@
         <h2>Shopping Cart</h2>
         <ul>
             {% for item in cart %}
-                <li>{{ item[0] }} - {{ item[1] }} - {{ item[2] }} - {{ item[3] }}$</li>
-                <button type="submit">- Remove from order</button>
+                <li>{{ item[1] }} - {{ item[2] }} - {{ item[3] }} - {{ item[4] }}$<form method="post" action="{{ url_for('auth.menu') }}">
+                    <input type="hidden" name="itemid" value="{{ item[0] }}">
+                    <button type="submit">- Remove from order</button>
+
+                    </form>
+                </li>
             {% endfor %}
         </ul>
     </div>

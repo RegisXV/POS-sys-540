@@ -127,9 +127,10 @@ def menu():
             itemname = request.form.get('itemname')
             itemcost = request.form.get('cost')
             add_to_cart(orderid, ordername, itemid, itemname, itemcost)
+            
 
     
-        cur.execute(f"Select ItemID, Item_name, cost, quantity from {ordername}_{orderid} where orderID > 1")
+        cur.execute(f"Select orderID, ItemID, Item_name, cost, quantity from {ordername}_{orderid} where orderID > 1")
         cart = cur.fetchall()
         details, apps, entrees, sides, drinks, desserts = fetch_menu_items1(orderid, ordername)
 
@@ -178,12 +179,14 @@ def add_to_cart(orderid, ordername, itemid, itemname, itemcost):
         flash(f'Error adding to cart: {e}', category='error')
         return redirect(url_for('auth.access_order'))
 
+@auth.route('/DeleteCart',methods=['GET','POST'])
 def delete_from_cart(orderid, ordername, itemid, itemname, itemcost):
     try:
+        orderListID = request.form.get('')
         cur.execute(f"SELECT posid, employeeID, ordername, listID FROM {ordername}_{orderid} WHERE orderID = 1")
     
-        print(Posinfo)
-        cur.execute(f"DELETE FROM {orderid} WHERE orderid = %s", (orderid,))
+
+        cur.execute(f"DELETE FROM {ordername}_{orderid} WHERE orderID = %s", (orderListID,))
         menu_db.commit()
         print("Item deleted from cart successfully!")
     except Exception as e:
