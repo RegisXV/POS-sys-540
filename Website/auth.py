@@ -217,19 +217,31 @@ def checkout():
         menu_db.rollback()
         flash(f'Error Paying for order: {e}', category='error')
     
-@auth.route('/DeleteCart',methods=['GET','POST'])
-def delete_from_cart(orderid, ordername, itemid, itemname, itemcost):
+@auth.route('/DeleteCart', methods=['POST'])
+def delete_from_cart():
     try:
-        orderListID = request.form.get('')
-        cur.execute(f"SELECT posid, employeeID, ordername, listID FROM {ordername}_{orderid} WHERE orderID = 1")
-    
+        #print(request.form)
+        orderid = request.form.get('orderid')
+        ordername = request.form.get('ordername')
+        orderListID = request.form.get('orderListID')
+        # Retrieve other parameters like itemid, itemname, itemcost if needed
 
+        print('ordername:', ordername)
+        print('orderid:', orderid)
+        print('orderlistid:', orderListID)
+       
+        cur.execute(f"SELECT orderID, ordername FROM {ordername}_{orderid} WHERE orderID = %s", (orderListID,))
         cur.execute(f"DELETE FROM {ordername}_{orderid} WHERE orderID = %s", (orderListID,))
         menu_db.commit()
         print("Item deleted from cart successfully!")
+            
+        return redirect(url_for('auth.cart_deleted_successfully'))   
+   
     except Exception as e:
-        menu_db.rollback() 
+        menu_db.rollback()
         print(f"Error deleting item from cart: {e}")
+        print(f"ordername: {ordername}, orderId:{orderid}")
+
 
 
 @auth.route('/Addemp', methods=['GET', 'POST']) #Add Employee 
