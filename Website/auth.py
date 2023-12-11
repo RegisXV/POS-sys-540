@@ -234,10 +234,32 @@ def checkout():
     except Exception as e:
         menu_db.rollback()
         flash(f'Error Paying for order: {e}', category='error')
-        return redirect(url_for('auth.menu'))
     
+@auth.route('/DeleteCart', methods=['POST'])
+def delete_from_cart():
+    try:
+        #print(request.form)
+        orderid = request.form.get('orderid')
+        ordername = request.form.get('ordername')
+        orderListID = request.form.get('orderListID')
+        # Retrieve other parameters like itemid, itemname, itemcost if needed
 
-    
+        print('ordername:', ordername)
+        print('orderid:', orderid)
+        print('orderlistid:', orderListID)
+       
+        cur.execute(f"SELECT orderID, ordername FROM {ordername}_{orderid} WHERE orderID = %s", (orderListID,))
+        cur.execute(f"DELETE FROM {ordername}_{orderid} WHERE orderID = %s", (orderListID,))
+        menu_db.commit()
+        print("Item deleted from cart successfully!")
+            
+        return redirect(url_for('auth.cart_deleted_successfully'))   
+   
+    except Exception as e:
+        menu_db.rollback()
+        print(f"Error deleting item from cart: {e}")
+        print(f"ordername: {ordername}, orderId:{orderid}")
+
 
 
 @auth.route('/Addemp', methods=['GET', 'POST']) #Add Employee 
@@ -366,43 +388,5 @@ def access_order():
         flash(f'Error accessing order: {e}', category='error')
         return redirect(url_for('auth.create_order'))
     
-# def fetch_menu_items1(orderid,ordername):
-#     try:
-#         cur.execute (f"Select posid, employeeID, ordername, listID from {ordername}_{orderid} ")
-#         details = cur.fetchall()
-#         cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'apps' ", )
-#         apps = cur.fetchall()
-#         cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'entrees' ", )
-#         entrees = cur.fetchall()
-#         cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'sides' ", )
-#         sides = cur.fetchall()
-#         cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'drinks' ", )
-#         drinks = cur.fetchall()
-#         cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'desserts' ", )
-#         desserts = cur.fetchall()
-#         return (details, apps, entrees, sides, drinks, desserts)
-#     except Exception as e:
-    
-#         flash(f'Error fetching menu items: {e}', category='error')
-#         return redirect(url_for('auth.create_order'))
-
-
-# def add_to_cart(orderid, ordername, itemid, itemname, itemcost):
-#     try:
-#         print(itemid,itemname,itemcost)
-#         print(f"Order ID: {orderid}, Order Name: {ordername}")
-#         cur.execute(f"Select posid, employeeID, ordername, listID from {ordername}_{orderid} where orderID=1")
-#         Posinfo = cur.fetchall()
-#         print(Posinfo)
-#         cur.execute(f"Insert into {ordername}_{orderid} (ItemID, Item_name, cost, quantity) values (%s, %s, %s, 1)", (itemid, itemname, itemcost))
-#         cur.execute("Select LAST_INSERT_ID()")
-#         Lastorderid = cur.fetchone()[0]
-#         print(Lastorderid)
-#         cur.execute(f"UPDATE {ordername}_{orderid} SET posid = %s, employeeID = %s, ordername = %s, listID = %s WHERE orderID = %s",
-#                     (Posinfo[0][0], Posinfo[0][1], Posinfo[0][2], Posinfo[0][3], Lastorderid))
-#         menu_db.commit()
-#     except Exception as e:
-#         flash(f'Error adding to cart: {e}', category='error')
-#         return redirect(url_for('auth.access_order'))
     
 
