@@ -131,9 +131,9 @@ def menu():
             add_to_cart(orderid, ordername, itemid, itemname, itemcost)
 
     
-        cur.execute(f"Select ItemID, Item_name, cost, quantity from {ordername}_{orderid} where orderID > 1")
+        cur.execute(f"Select orderID, ItemID, Item_name, cost, quantity from {ordername}_{orderid} where orderID > 1") 
         cart = cur.fetchall()
-        cur.execute(f"Select sum(cost) from {ordername}_{orderid} where orderID > 1")
+        cur.execute(f"Select sum(cost) AS total_formatted from {ordername}_{orderid} where orderID > 1")
         total = cur.fetchone()[0]
         if total==None:
             total=0
@@ -181,18 +181,63 @@ def add_to_cart(orderid, ordername, itemid, itemname, itemcost):
     except Exception as e:
         flash(f'Error adding to cart: {e}', category='error')
         return redirect(url_for('auth.access_order'))
-
-def delete_from_cart(orderid, ordername, itemid, itemname, itemcost):
+@auth.route('/removefromcart', methods=['GET','POST'])
+def Remove_from_cart():
     try:
-        cur.execute(f"SELECT posid, employeeID, ordername, listID FROM {ordername}_{orderid} WHERE orderID = 1")
-    
-        print(Posinfo)
-        cur.execute(f"DELETE FROM {orderid} WHERE orderid = %s", (orderid,))
-        menu_db.commit()
-        print("Item deleted from cart successfully!")
+        order_id = session.get('orderid')
+        order_name = session.get('ordername')
+        if request.method =='POST':
+            orderitemid = request.form['itemid']
+            cur.execute('Start Transaction')
+            cur.execute(f'Delete from {order_name}_{order_id} where orderID=%s',(orderitemid,))
+            cur.execute('COMMIT')
+            return redirect(url_for('auth.menu'))
     except Exception as e:
-        menu_db.rollback() 
-        print(f"Error deleting item from cart: {e}")
+        menu_db.rollback()
+        flash(f'Error Paying for order: {e}', category='error')
+        return redirect(url_for('auth.menu'))
+    
+@auth.route('/submit_order', methods=['GET','POST'])
+def checkout():
+    try:
+        order_id = session.get('orderid')
+        order_name = session.get('ordername')
+        if request.method=='POST':
+            Payment = request.form['amount']
+            Total = request.form['total']
+            if Payment==Total:
+                cur.execute("START TRANSACTION") #In case things go wrong
+                
+                cur.execute(f"Select posid from pos where listid = {order_id}")
+                curpos=cur.fetchone()[0]
+
+                cur.execute(f"DELETE FROM {order_name}_{order_id} WHERE listID = %s", (order_id,))
+                cur.execute("DELETE FROM orderlist WHERE listid = %s", (order_id,))
+                cur.execute("DELETE FROM pos WHERE listid = %s", (order_id,))
+            
+
+                cur.execute(f"Drop Table {order_name}_{order_id}")
+                
+                cur.execute("Update orderhistory set ispaid = 1 where posid=%s",(curpos,))
+                cur.execute("Update orderhistory set total =%s where posid=%s",(Total,curpos,))
+
+                cur.execute("COMMIT")
+
+                
+                flash('Checkout Successful!', category='success')
+                return redirect(url_for('auth.create_order'))
+            else:
+                flash('Incorrect Amount', category='error')
+                return redirect(url_for('auth.menu'))
+                
+                
+    except Exception as e:
+        menu_db.rollback()
+        flash(f'Error Paying for order: {e}', category='error')
+        return redirect(url_for('auth.menu'))
+    
+
+    
 
 
 @auth.route('/Addemp', methods=['GET', 'POST']) #Add Employee 
@@ -320,8 +365,6 @@ def access_order():
     except Exception as e:
         flash(f'Error accessing order: {e}', category='error')
         return redirect(url_for('auth.create_order'))
-    
-# THE FETCH HAS BEEN MOVED TO 
     
 # def fetch_menu_items1(orderid,ordername):
 #     try:

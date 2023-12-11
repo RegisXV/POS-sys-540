@@ -4,6 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu</title>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            {% if category == 'error' %}
+            <div class="alert alert-danger alter-dismissable fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {% else %}
+            <div class="alert alert-success alter-dismissable fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+        {% endwith %}
     <link rel="stylesheet" href="Pos.css">
 </head>
 <body>
@@ -95,14 +116,30 @@
         <h2>Shopping Cart</h2>
         <ul>
             {% for item in cart %}
+<<<<<<< HEAD
                 <li>{{ item[0] }} - {{ item[1] }} - {{ item[2] }} - {{ item[3] }}$</li>
                 <button type="submit">- Remove from order</button>
+=======
+                <li>#{{ item[1] }} - {{ item[2] }} - {{ item[3] }}$ - Quantity - {{ item[4] }} <form method="post" action="{{ url_for('auth.Remove_from_cart') }}">
+                    <input type="hidden" name="itemid" value="{{ item[0] }}">
+                    <button type="submit"> - Remove</button>
+                </form>
+                </li>
+>>>>>>> Kyle
             {% endfor %}
         </ul>
-        <div class="total">
+        <form action="/submit_order" method="post">
+            <!-- Other form elements -->
+        
+
             <div class="total">
                 <strong>Total:</strong> {{ total }}$
             </div>
+            <input type="hidden" id="total" name="total" value="{{ total }}">
+            <label for="amount">Enter Payment:</label>
+            <input type="text" id="amount" name="amount" placeholder="Checkout">
+            <button type="submit">Submit Order</button>
+        </form>
     </div>
 </div>
 </body>
