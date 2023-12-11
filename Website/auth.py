@@ -149,16 +149,17 @@ def fetch_menu_items1(orderid,ordername):
     try:
         cur.execute (f"Select posid, employeeID, ordername, listID from {ordername}_{orderid} ")
         details = cur.fetchall()
-        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'apps' ", )
-        apps = cur.fetchall()
-        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'entrees' ", )
-        entrees = cur.fetchall()
-        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'sides' ", )
-        sides = cur.fetchall()
-        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'drinks' ", )
-        drinks = cur.fetchall()
-        cur.execute("SELECT itemID, itemname, cost FROM Itemlist WHERE category = 'desserts' ", )
-        desserts = cur.fetchall()
+
+        def itemList(itemCat):
+            cur.execute(f"SELECT itemID, itemname, cost FROM Itemlist WHERE category = '{itemCat}' ")
+            list_result = cur.fetchall()
+            return list_result
+        
+        apps = itemList('apps')
+        entrees = itemList('entrees')
+        sides = itemList('sides')
+        drinks = itemList('drinks')
+        desserts = itemList('desserts')
         return (details, apps, entrees, sides, drinks, desserts)
     except Exception as e:
     
@@ -346,6 +347,8 @@ def delete_order():
         order_name = request.form.get('order_name')  
 
         cur.execute("START TRANSACTION") #In case things go wrong
+
+
 
         cur.execute(f"DELETE FROM {order_name}_{order_id} WHERE listID = %s", (order_id,))
         cur.execute("DELETE FROM orderlist WHERE listid = %s", (order_id,))
