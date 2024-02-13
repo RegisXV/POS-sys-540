@@ -10,7 +10,6 @@ def create_tables():
     try:
         mysql.connection.ping()
     except Exception as e:
-        print(f"Error pinging MySQL: {e}")
         return 
     with current_app.app_context():
         cur = mysql.connection.cursor()

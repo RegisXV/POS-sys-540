@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Remove Employee{% endblock %}
+{% block content %}
+<button onclick=location.href="/Addemp">Add Employee</button>
+<button onclick=location.href="/order">Access POS</button>
+<button onclick=location.href="/logout">Logout</button>
+<button onclick=location.href="/history">Order History</button>
+<form method="POST" action="{{ url_for('auth.remove_employee_route') }}">
+    <h2>Employee List</h2>
+    <ul>
+        {% for employee in employee_list %}
+            <li>
+                ID - {{ employee[0] }} | Manager 1/0 - {{ employee[1] }} | FirstName - {{ employee[2] }} | LastName - {{ employee[3] }} | (PIN: {{ employee[4] }})
+                <form method="post" action="{{ url_for('auth.remove_employee_route') }}">
+                    <input type="hidden" name="EmpID" value="{{ employee[0] }}">
+                    <input type="hidden" name="isman" value="{{ employee[1] }}">
+                    <button type="submit">Remove Employee</button>
+                    </form>
+            </li>
+        {% endfor %}
+    </ul>
+</form>
+{% endblock %}    

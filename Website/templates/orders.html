@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order List</title>
+</head>
+<body>
+    <h1>Order List</h1>
+
+    <!-- Display list of orders -->
+    <ul>
+        {% for order in orders %}
+            <li>Order {{ loop.index }}: {{ order[1] }} 
+                <form method="post" action="/access_order">
+                    <input type="hidden" name="order_id" value="{{ order[0] }}">
+                    <input type="hidden" name="order_name" value="{{ order[1] }}">
+                    <button type="submit">Access Order</button>
+                    </form>
+                <form method="post" action="/delete_order">
+                    <input type="hidden" name="order_id" value="{{ order[0] }}">
+                    <input type="hidden" name="order_name" value="{{ order[1] }}">
+                    <button type="submit">Delete Order</button>
+                    </form>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <!-- Form to create a new order -->
+    <form method="POST" action="{{ url_for('auth.create_order') }}">
+        <label for="ordername">Order Name:</label>
+        <input type="text" id="ordername" name="ordername" required>
+        <button type="submit">Create Order</button>
+    </form>
+
+    <button onclick=location.href="/logout">Logout</button>
+</body>
+</html>
+</body>
+</html>

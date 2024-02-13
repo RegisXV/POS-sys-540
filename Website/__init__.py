@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_mysqldb import MySQL
+from flask_login import LoginManager
 def create_app():
     app = Flask(__name__)
     
@@ -7,10 +8,11 @@ def create_app():
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_PORT'] = 3306
     app.config['MYSQL_USER'] = 'root'
-    app.config['MYSQL_PASSWORD'] = 'OogaBooga619'
+    app.config['MYSQL_PASSWORD'] = 'root'
     app.config['MYSQL_DB'] = 'POS'
 
     
+
     mysql = MySQL(app)
     print(mysql)
     from .models import create_tables
@@ -19,6 +21,8 @@ def create_app():
     with app.app_context():
         create_tables()
 
+    #login_manager = LoginManager(app)
+    #login_manager.login_view = 'auth.login'
 
     # Ensure tables are created when the app starts
     with app.app_context():
